@@ -1,0 +1,837 @@
+﻿@page
+@model ChathamHouse.Pages.post.CreateModel
+@{
+    ViewData["Title"] = "Create New Post";
+}
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<style>
+    .post-form-wrap {
+        max-width: 700px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    /* Alert styles */
+    .pf-alert {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 13px 16px;
+        border-radius: 10px;
+        font-size: 14px;
+        margin-bottom: 1.25rem;
+        border: 1px solid;
+    }
+
+    .pf-alert-info {
+        background: #eff6ff;
+        color: #1e40af;
+        border-color: #bfdbfe;
+    }
+
+    .pf-alert-success {
+        background: #f0fdf4;
+        color: #166534;
+        border-color: #bbf7d0;
+    }
+
+    .pf-alert-danger {
+        background: #fef2f2;
+        color: #991b1b;
+        border-color: #fecaca;
+    }
+
+    /* Card */
+    .pf-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    .pf-card-header {
+        background: #1a56db;
+        padding: 1.1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .pf-card-header h3 {
+            margin: 0;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+    .pf-card-body {
+        padding: 1.75rem;
+    }
+
+    /* Section divider */
+    .pf-section {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 1.5rem 0 1.1rem;
+    }
+
+        .pf-section span {
+            font-size: 11px;
+            font-weight: 600;
+            color: #6b7280;
+            white-space: nowrap;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+        }
+
+        .pf-section::before,
+        .pf-section::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+    /* Drop area */
+    .pf-drop-area {
+        border: 2px dashed #d1d5db;
+        border-radius: 10px;
+        padding: 2rem 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s;
+        background: #f9fafb;
+        margin-bottom: 1.25rem;
+    }
+
+        .pf-drop-area:hover,
+        .pf-drop-area.pf-highlight {
+            background: #eff6ff;
+            border-color: #1a56db;
+        }
+
+    .pf-drop-icon {
+        width: 64px;
+        height: 64px;
+        background: #eff6ff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.85rem;
+        border: 1px solid #bfdbfe;
+    }
+
+        .pf-drop-icon i {
+            font-size: 26px;
+            color: #1a56db;
+        }
+
+    .pf-drop-area p {
+        margin: 0 0 4px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .pf-drop-area small {
+        font-size: 12px;
+        color: #9ca3af;
+    }
+
+    #pf-preview-img {
+        width: 90px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: 10px;
+        display: none;
+        margin: 0 auto 0.6rem;
+        border: 2px solid #e5e7eb;
+    }
+
+    /* Form grid */
+    .pf-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 1rem;
+    }
+
+    @@media (max-width: 540px) {
+        .pf-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Fields */
+    .pf-field {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-bottom: 1rem;
+    }
+
+        .pf-field label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .pf-field input[type="text"],
+        .pf-field textarea {
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 14px;
+            color: #111827;
+            font-family: inherit;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+            .pf-field input[type="text"]:focus,
+            .pf-field textarea:focus {
+                outline: none;
+                border-color: #1a56db;
+                box-shadow: 0 0 0 3px rgba(26,86,219,0.12);
+            }
+
+        .pf-field textarea {
+            resize: vertical;
+            min-height: 140px;
+            line-height: 1.65;
+        }
+
+        .pf-field small {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+    .pf-char-count {
+        font-size: 12px;
+        color: #9ca3af;
+        text-align: right;
+        margin-top: 3px;
+    }
+
+    /* ── Custom Country Select ── */
+    .pf-select-wrap {
+        position: relative;
+    }
+
+    .pf-select-trigger {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #fff;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 9px 36px 9px 12px;
+        font-size: 14px;
+        color: #111827;
+        cursor: pointer;
+        user-select: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+        position: relative;
+        min-height: 40px;
+        box-sizing: border-box;
+    }
+
+        .pf-select-trigger:focus,
+        .pf-select-trigger.pf-open {
+            outline: none;
+            border-color: #1a56db;
+            box-shadow: 0 0 0 3px rgba(26,86,219,0.12);
+        }
+
+        .pf-select-trigger .pf-chevron {
+            position: absolute;
+            right: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 13px;
+            color: #9ca3af;
+            transition: transform 0.2s;
+            pointer-events: none;
+        }
+
+        .pf-select-trigger.pf-open .pf-chevron {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+    .pf-flag-img {
+        width: 22px;
+        height: 15px;
+        border-radius: 3px;
+        object-fit: cover;
+        flex-shrink: 0;
+        border: 1px solid #e5e7eb;
+        display: block;
+    }
+
+    .pf-flag-placeholder {
+        width: 22px;
+        height: 15px;
+        border-radius: 3px;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        flex-shrink: 0;
+        display: block;
+    }
+
+    .pf-select-label {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Dropdown panel */
+    .pf-dropdown {
+        position: absolute;
+        top: calc(100% + 5px);
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        z-index: 999;
+        max-height: 280px;
+        overflow: hidden;
+        display: none;
+        flex-direction: column;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+    }
+
+        .pf-dropdown.pf-open {
+            display: flex;
+        }
+
+    .pf-dropdown-search {
+        padding: 10px 10px 8px;
+        border-bottom: 1px solid #f3f4f6;
+        flex-shrink: 0;
+    }
+
+        .pf-dropdown-search input {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            padding: 7px 10px 7px 32px;
+            font-size: 13px;
+            background: #f9fafb;
+            color: #111827;
+            font-family: inherit;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 10px center;
+        }
+
+            .pf-dropdown-search input:focus {
+                outline: none;
+                border-color: #1a56db;
+            }
+
+    .pf-country-list {
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .pf-group-label {
+        padding: 8px 12px 4px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        background: #f9fafb;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .pf-option {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #111827;
+        transition: background 0.1s;
+    }
+
+        .pf-option:hover,
+        .pf-option.pf-selected {
+            background: #eff6ff;
+            color: #1e40af;
+        }
+
+        .pf-option.pf-selected {
+            font-weight: 600;
+        }
+
+    /* Payment summary */
+    .pf-payment-box {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+        .pf-payment-box .pf-pay-label {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 2px;
+        }
+
+        .pf-payment-box .pf-pay-amount {
+            font-size: 22px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+    .pf-paystack-badge {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: #f0fdf4;
+        color: #166534;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 20px;
+        padding: 5px 12px;
+        border: 1px solid #bbf7d0;
+    }
+
+    /* Buttons */
+    .pf-btn-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 1.25rem;
+    }
+
+    .pf-btn-pay {
+        flex: 1;
+        background: #1a56db;
+        color: #fff;
+        border: none;
+        border-radius: 9px;
+        padding: 13px 20px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: background 0.15s, transform 0.1s;
+        font-family: inherit;
+    }
+
+        .pf-btn-pay:hover {
+            background: #1648bc;
+        }
+
+        .pf-btn-pay:active {
+            transform: scale(0.98);
+        }
+
+    .pf-btn-cancel {
+        background: #f9fafb;
+        color: #6b7280;
+        border: 1px solid #d1d5db;
+        border-radius: 9px;
+        padding: 13px 20px;
+        font-size: 15px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: background 0.15s;
+        font-family: inherit;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+        .pf-btn-cancel:hover {
+            background: #f3f4f6;
+        }
+
+    .text-danger {
+        color: #dc2626;
+        font-size: 12px;
+        margin-top: 3px;
+        display: block;
+    }
+</style>
+
+<div class="post-form-wrap">
+
+    @* Success *@
+    @if (Model.successMessage.Length > 0)
+    {
+        <div class="pf-alert pf-alert-success">
+            <i class="fas fa-check-circle" style="margin-top:1px;flex-shrink:0"></i>
+            <span><strong>@Model.successMessage</strong></span>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @* Error *@
+    @if (TempData["Error"] != null)
+    {
+        <div class="pf-alert pf-alert-danger">
+            <i class="fas fa-exclamation-circle" style="margin-top:1px;flex-shrink:0"></i>
+            <span>@TempData["Error"]</span>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @* Payment info *@
+    <div class="pf-alert pf-alert-info">
+        <i class="fas fa-info-circle" style="margin-top:1px;flex-shrink:0"></i>
+        <span><strong>Payment required:</strong> A one-time fee of <strong>₦@Model.PaymentAmount</strong> is required to publish your post. You will be redirected to Paystack to complete payment securely.</span>
+    </div>
+
+    <div class="pf-card">
+        <div class="pf-card-header">
+            <i class="fas fa-pen-to-square" style="color:#fff;font-size:17px"></i>
+            <h3>Create New Post</h3>
+        </div>
+        <div class="pf-card-body">
+            <form method="post" enctype="multipart/form-data">
+
+                <input type="hidden" asp-for="PaymentReference" />
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+                @* {{-- Cover image --}} *@
+                <div class="pf-section"><span>Cover Image</span></div>
+
+                <div id="pf-drop-area" class="pf-drop-area">
+                    <input id="pf-file-input" asp-for="Imagefile" type="file" accept="image/*" hidden />
+                    <img id="pf-preview-img" src="" alt="Preview" />
+                    <div id="pf-upload-placeholder">
+                        <div class="pf-drop-icon">
+                            <i class="fas fa-cloud-arrow-up"></i>
+                        </div>
+                        <p>Drag &amp; drop or click to upload</p>
+                        <small>JPG, PNG, WEBP &mdash; max 5 MB</small>
+                    </div>
+                </div>
+                <span asp-validation-for="Imagefile" class="text-danger"></span>
+
+                @* {{-- Club details --}} *@
+                <div class="pf-section"><span>Club Details</span></div>
+
+                <div class="pf-row">
+                    <div class="pf-field">
+                        <label asp-for="posts.Name">Name of Club / Organization</label>
+                        <input type="text" asp-for="posts.Name" placeholder="e.g. Lagos Polo Club" />
+                        <span asp-validation-for="posts.Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="pf-field">
+                        <label asp-for="posts.Location">Location</label>
+                        @* {{-- Hidden real input that Razor binds to --}} *@
+                        <input type="hidden" asp-for="posts.Location" id="pf-location-value" />
+
+                        @* {{-- Custom visual dropdown --}} *@
+                        <div class="pf-select-wrap">
+                            <div class="pf-select-trigger" id="pf-select-trigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-label="Select country">
+                                <span class="pf-flag-placeholder" id="pf-trigger-flag"></span>
+                                <span class="pf-select-label" id="pf-trigger-label" style="color:#9ca3af">Select a country</span>
+                                <i class="fas fa-chevron-down pf-chevron"></i>
+                            </div>
+                            <div class="pf-dropdown" id="pf-dropdown" role="listbox">
+                                <div class="pf-dropdown-search">
+                                    <input type="text" id="pf-search" placeholder="Search countries..." autocomplete="off" />
+                                </div>
+                                <div class="pf-country-list" id="pf-country-list"></div>
+                            </div>
+                        </div>
+                        <span asp-validation-for="posts.Location" class="text-danger"></span>
+                    </div>
+                </div>
+
+                @* {{-- Description --}} *@
+                <div class="pf-field">
+                    <label asp-for="posts.Content">Description</label>
+                    <textarea asp-for="posts.Content" rows="7"
+                              placeholder="Describe your club, event or organization in detail..."
+                              oninput="document.getElementById('pf-char-count').textContent=this.value.length"></textarea>
+                    <div class="pf-char-count"><span id="pf-char-count">0</span> characters</div>
+                    <span asp-validation-for="posts.Content" class="text-danger"></span>
+                    <small>Be descriptive — members use this to find and join your club.</small>
+                </div>
+
+                @* {{-- Payment --}} *@
+                <div class="pf-section"><span>Payment</span></div>
+
+                <div class="pf-payment-box">
+                    <div>
+                        <div class="pf-pay-label">One-time publishing fee</div>
+                        <div class="pf-pay-amount">₦@Model.PaymentAmount</div>
+                    </div>
+                    <div class="pf-paystack-badge">
+                        <i class="fas fa-lock" style="font-size:11px"></i>
+                        Secured by Paystack
+                    </div>
+                </div>
+
+                <div class="pf-btn-row">
+                    <button type="submit" class="pf-btn-pay">
+                        <i class="fas fa-credit-card"></i>
+                        Pay ₦@Model.PaymentAmount &amp; Publish
+                    </button>
+                    <a asp-page="/Land/Index" class="pf-btn-cancel">
+                        <i class="fas fa-xmark"></i>
+                        Cancel
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        (function () {
+
+            // ── Country data: name + ISO 3166-1 alpha-2 code ──────────────────────
+            var countries = [
+                // Africa
+                { g: 'Africa',        code: 'ng', name: 'Nigeria' },
+                { g: 'Africa',        code: 'gh', name: 'Ghana' },
+                { g: 'Africa',        code: 'za', name: 'South Africa' },
+                { g: 'Africa',        code: 'ke', name: 'Kenya' },
+                { g: 'Africa',        code: 'eg', name: 'Egypt' },
+                { g: 'Africa',        code: 'et', name: 'Ethiopia' },
+                { g: 'Africa',        code: 'tz', name: 'Tanzania' },
+                { g: 'Africa',        code: 'ug', name: 'Uganda' },
+                { g: 'Africa',        code: 'sn', name: 'Senegal' },
+                { g: 'Africa',        code: 'cm', name: 'Cameroon' },
+                { g: 'Africa',        code: 'ci', name: 'Ivory Coast' },
+                { g: 'Africa',        code: 'rw', name: 'Rwanda' },
+                { g: 'Africa',        code: 'zm', name: 'Zambia' },
+                { g: 'Africa',        code: 'zw', name: 'Zimbabwe' },
+                { g: 'Africa',        code: 'ao', name: 'Angola' },
+                { g: 'Africa',        code: 'mz', name: 'Mozambique' },
+                // North America
+                { g: 'North America', code: 'us', name: 'United States' },
+                { g: 'North America', code: 'ca', name: 'Canada' },
+                { g: 'North America', code: 'mx', name: 'Mexico' },
+                // Europe
+                { g: 'Europe',        code: 'gb', name: 'United Kingdom' },
+                { g: 'Europe',        code: 'de', name: 'Germany' },
+                { g: 'Europe',        code: 'fr', name: 'France' },
+                { g: 'Europe',        code: 'it', name: 'Italy' },
+                { g: 'Europe',        code: 'es', name: 'Spain' },
+                { g: 'Europe',        code: 'nl', name: 'Netherlands' },
+                { g: 'Europe',        code: 'pt', name: 'Portugal' },
+                { g: 'Europe',        code: 'se', name: 'Sweden' },
+                { g: 'Europe',        code: 'no', name: 'Norway' },
+                // Asia
+                { g: 'Asia',          code: 'in', name: 'India' },
+                { g: 'Asia',          code: 'cn', name: 'China' },
+                { g: 'Asia',          code: 'jp', name: 'Japan' },
+                { g: 'Asia',          code: 'kr', name: 'South Korea' },
+                { g: 'Asia',          code: 'sg', name: 'Singapore' },
+                { g: 'Asia',          code: 'ae', name: 'UAE' },
+                { g: 'Asia',          code: 'sa', name: 'Saudi Arabia' },
+                { g: 'Asia',          code: 'af', name: 'Afghanistan' },
+                // Oceania
+                { g: 'Oceania',       code: 'au', name: 'Australia' },
+                { g: 'Oceania',       code: 'nz', name: 'New Zealand' },
+                // South America
+                { g: 'South America', code: 'br', name: 'Brazil' },
+                { g: 'South America', code: 'ar', name: 'Argentina' },
+                { g: 'South America', code: 'co', name: 'Colombia' },
+                { g: 'South America', code: 'cl', name: 'Chile' }
+            ];
+
+            // Flag images served from flagcdn.com — reliable, free, no API key needed
+            function flagSrc(code) {
+                return 'https://flagcdn.com/w40/' + code + '.png';
+            }
+
+            // ── Build dropdown list ───────────────────────────────────────────────
+            function renderList(filter) {
+                var list = document.getElementById('pf-country-list');
+                list.innerHTML = '';
+                var q = (filter || '').toLowerCase().trim();
+                var filtered = q
+                    ? countries.filter(function (c) { return c.name.toLowerCase().indexOf(q) !== -1; })
+                    : countries;
+
+                var currentGroup = '';
+                filtered.forEach(function (c) {
+                    if (!q && c.g !== currentGroup) {
+                        currentGroup = c.g;
+                        var gl = document.createElement('div');
+                        gl.className = 'pf-group-label';
+                        gl.textContent = c.g;
+                        list.appendChild(gl);
+                    }
+                    var opt = document.createElement('div');
+                    opt.className = 'pf-option';
+                    opt.setAttribute('role', 'option');
+                    opt.dataset.code = c.code;
+                    opt.dataset.name = c.name;
+
+                    var img = document.createElement('img');
+                    img.className = 'pf-flag-img';
+                    img.src = flagSrc(c.code);
+                    img.alt = c.name + ' flag';
+                    img.width = 22;
+                    img.height = 15;
+                    // Fallback: show a grey box if image fails
+                    img.onerror = function () { this.style.visibility = 'hidden'; };
+
+                    var span = document.createElement('span');
+                    span.textContent = c.name;
+
+                    opt.appendChild(img);
+                    opt.appendChild(span);
+                    opt.addEventListener('click', function () { selectCountry(c); });
+                    list.appendChild(opt);
+                });
+
+                if (filtered.length === 0) {
+                    var empty = document.createElement('div');
+                    empty.style.cssText = 'padding:14px 12px;font-size:13px;color:#9ca3af;text-align:center';
+                    empty.textContent = 'No countries found';
+                    list.appendChild(empty);
+                }
+            }
+
+            // ── Select a country ─────────────────────────────────────────────────
+            var selectedCode = null;
+
+            function selectCountry(c) {
+                selectedCode = c.code;
+                document.getElementById('pf-location-value').value = c.name;
+
+                var trigger = document.getElementById('pf-select-trigger');
+                var flagEl  = document.getElementById('pf-trigger-flag');
+                var labelEl = document.getElementById('pf-trigger-label');
+
+                // Replace placeholder span with real img
+                var img = document.createElement('img');
+                img.className = 'pf-flag-img';
+                img.src = flagSrc(c.code);
+                img.alt = c.name + ' flag';
+                img.width = 22;
+                img.height = 15;
+                img.onerror = function () { this.style.visibility = 'hidden'; };
+                flagEl.parentNode.replaceChild(img, flagEl);
+
+                labelEl.textContent = c.name;
+                labelEl.style.color = '#111827';
+
+                closeDropdown();
+            }
+
+            // ── Open / close ─────────────────────────────────────────────────────
+            function openDropdown() {
+                document.getElementById('pf-dropdown').classList.add('pf-open');
+                var trigger = document.getElementById('pf-select-trigger');
+                trigger.classList.add('pf-open');
+                trigger.setAttribute('aria-expanded', 'true');
+                document.getElementById('pf-search').value = '';
+                renderList('');
+                setTimeout(function () { document.getElementById('pf-search').focus(); }, 40);
+            }
+
+            function closeDropdown() {
+                document.getElementById('pf-dropdown').classList.remove('pf-open');
+                var trigger = document.getElementById('pf-select-trigger');
+                trigger.classList.remove('pf-open');
+                trigger.setAttribute('aria-expanded', 'false');
+            }
+
+            // Trigger click
+            document.getElementById('pf-select-trigger').addEventListener('click', function (e) {
+                e.stopPropagation();
+                document.getElementById('pf-dropdown').classList.contains('pf-open') ? closeDropdown() : openDropdown();
+            });
+
+            // Keyboard
+            document.getElementById('pf-select-trigger').addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDropdown(); }
+                if (e.key === 'Escape') closeDropdown();
+            });
+
+            // Search filter
+            document.getElementById('pf-search').addEventListener('input', function () {
+                renderList(this.value);
+            });
+            document.getElementById('pf-search').addEventListener('click', function (e) { e.stopPropagation(); });
+
+            // Close on outside click
+            document.addEventListener('click', function () { closeDropdown(); });
+
+            // Initial render
+            renderList('');
+
+            // ── Image upload / drag-drop ─────────────────────────────────────────
+            var dropArea   = document.getElementById('pf-drop-area');
+            var fileInput  = document.getElementById('pf-file-input');
+            var previewImg = document.getElementById('pf-preview-img');
+            var placeholder = document.getElementById('pf-upload-placeholder');
+
+            dropArea.addEventListener('click', function () { fileInput.click(); });
+
+            function showPreview(file) {
+                if (!file || !file.type.startsWith('image/')) return;
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    placeholder.style.display  = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+
+            fileInput.addEventListener('change', function () {
+                if (this.files && this.files[0]) showPreview(this.files[0]);
+            });
+
+            ['dragenter', 'dragover'].forEach(function (ev) {
+                dropArea.addEventListener(ev, function (e) {
+                    e.preventDefault(); e.stopPropagation();
+                    dropArea.classList.add('pf-highlight');
+                });
+            });
+            ['dragleave', 'drop'].forEach(function (ev) {
+                dropArea.addEventListener(ev, function (e) {
+                    e.preventDefault(); e.stopPropagation();
+                    dropArea.classList.remove('pf-highlight');
+                });
+            });
+            dropArea.addEventListener('drop', function (e) {
+                var files = e.dataTransfer.files;
+                if (files && files[0]) { fileInput.files = files; showPreview(files[0]); }
+            });
+
+        })();
+    </script>
+}

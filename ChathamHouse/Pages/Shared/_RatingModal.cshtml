@@ -1,0 +1,516 @@
+﻿<style>
+    .rm-modal .modal-content {
+        background: #1a1a1a;
+        border: 1px solid #2a2a2a;
+        border-radius: 20px;
+        font-family: 'Inter', sans-serif;
+        color: #fff;
+        overflow: hidden;
+    }
+
+    .rm-modal .modal-header {
+        background: #111;
+        border-bottom: 1px solid #2a2a2a;
+        padding: 1.25rem 1.5rem;
+    }
+
+    .rm-modal .modal-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 18px;
+        color: #fff;
+        letter-spacing: 0.3px;
+    }
+
+    .rm-modal .btn-close {
+        filter: invert(1) opacity(0.5);
+    }
+
+    .rm-modal .modal-body {
+        padding: 1.5rem;
+        background: #1a1a1a;
+    }
+
+    .rm-stats-box {
+        background: #111;
+        border-radius: 14px;
+        padding: 1.5rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        border: 1px solid #2a2a2a;
+    }
+
+    .rm-stats-label {
+        font-size: 11px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #555;
+        margin-bottom: 0.75rem;
+    }
+
+    .rm-stars-display {
+        font-size: 28px;
+        margin-bottom: 0.5rem;
+    }
+
+        .rm-stars-display .star {
+            color: #EF9F27;
+        }
+
+            .rm-stars-display .star.empty {
+                color: #333;
+            }
+
+    .rm-avg {
+        font-family: 'Playfair Display', serif;
+        font-size: 36px;
+        color: #fff;
+        line-height: 1;
+    }
+
+    .rm-count {
+        font-size: 13px;
+        color: #555;
+        margin-top: 4px;
+    }
+
+    .rm-section-label {
+        font-size: 11px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #555;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .rm-section-label .badge {
+            background: #2a2a2a;
+            color: #888;
+            font-size: 11px;
+            border-radius: 99px;
+            padding: 2px 8px;
+            letter-spacing: 0;
+            text-transform: none;
+        }
+
+    #ratingsList {
+        max-height: 260px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #2a2a2a transparent;
+    }
+
+    .rm-comment-item {
+        display: flex;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid #222;
+    }
+
+        .rm-comment-item:last-child {
+            border-bottom: none;
+        }
+
+    .rm-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 13px;
+        flex-shrink: 0;
+        overflow: hidden;
+        color: #fff;
+    }
+
+    .rm-comment-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #ddd;
+    }
+
+    .rm-comment-stars {
+        font-size: 12px;
+        color: #EF9F27;
+        margin: 2px 0;
+    }
+
+        .rm-comment-stars .empty {
+            color: #333;
+        }
+
+    .rm-comment-text {
+        font-size: 13px;
+        color: #888;
+        margin: 4px 0 0;
+        line-height: 1.55;
+    }
+
+    .rm-comment-date {
+        font-size: 11px;
+        color: #444;
+        margin-top: 4px;
+    }
+
+    .rm-input-section {
+        background: #111;
+        border-radius: 14px;
+        padding: 1.25rem;
+        margin-top: 1.25rem;
+        border: 1px solid #2a2a2a;
+    }
+
+    .rm-star-pick {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 4px;
+        margin-bottom: 1rem;
+    }
+
+        .rm-star-pick input {
+            display: none;
+        }
+
+        .rm-star-pick label {
+            font-size: 26px;
+            color: #333;
+            cursor: pointer;
+            transition: color 0.15s, transform 0.1s;
+            line-height: 1;
+        }
+
+            .rm-star-pick input:checked ~ label,
+            .rm-star-pick label:hover,
+            .rm-star-pick label:hover ~ label {
+                color: #EF9F27;
+                transform: scale(1.15);
+            }
+
+    .rm-input-row {
+        display: flex;
+        gap: 8px;
+    }
+
+        .rm-input-row input {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            color: #fff;
+            padding: 10px 14px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+            .rm-input-row input::placeholder {
+                color: #444;
+            }
+
+            .rm-input-row input:focus {
+                border-color: #444;
+            }
+
+    .rm-submit-btn {
+        background: #fff;
+        color: #111;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 18px;
+        font-size: 14px;
+        font-weight: 500;
+        font-family: 'Inter', sans-serif;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: opacity 0.15s;
+    }
+
+        .rm-submit-btn:hover {
+            opacity: 0.85;
+        }
+
+        .rm-submit-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+    #ratingMessage .alert-success {
+        background: #0d2e22;
+        border: 1px solid #1D9E75;
+        color: #5DCAA5;
+        border-radius: 10px;
+        font-size: 14px;
+    }
+
+    #ratingMessage .alert-danger {
+        background: #2e0d0d;
+        border: 1px solid #E24B4A;
+        color: #F09595;
+        border-radius: 10px;
+        font-size: 14px;
+    }
+</style>
+
+<div class="modal fade rm-modal" id="ratingModal" tabindex="-1"
+     aria-labelledby="ratingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="ratingModalLabel">
+                    ★ &nbsp;Website ratings
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <!-- Stats -->
+                <div class="rm-stats-box">
+                    <p class="rm-stats-label">Overall rating</p>
+                    <div class="rm-stars-display" id="modalStarsDisplay">
+                        <span class="star">★</span><span class="star">★</span>
+                        <span class="star">★</span><span class="star empty">☆</span>
+                        <span class="star empty">☆</span>
+                    </div>
+                    <div class="rm-avg" id="modalAverageRating">0.0</div>
+                    <div class="rm-count" id="modalRatingCount">0 ratings</div>
+                </div>
+
+                <!-- Comments list -->
+                <div class="rm-section-label">
+                    Comments
+                    <span class="badge" id="userCount">0</span>
+                </div>
+                <div id="ratingsList">
+                    <div style="text-align:center;color:#555;padding:1.5rem 0;font-size:14px;">
+                        Loading comments...
+                    </div>
+                </div>
+
+                <!-- Add comment -->
+                <div class="rm-input-section">
+                    <div class="rm-star-pick">
+                        <input type="radio" name="modal-rating" value="5" id="modal-star5">
+                        <label for="modal-star5" title="5 stars">★</label>
+                        <input type="radio" name="modal-rating" value="4" id="modal-star4">
+                        <label for="modal-star4" title="4 stars">★</label>
+                        <input type="radio" name="modal-rating" value="3" id="modal-star3">
+                        <label for="modal-star3" title="3 stars">★</label>
+                        <input type="radio" name="modal-rating" value="2" id="modal-star2">
+                        <label for="modal-star2" title="2 stars">★</label>
+                        <input type="radio" name="modal-rating" value="1" id="modal-star1">
+                        <label for="modal-star1" title="1 star">★</label>
+                    </div>
+                    <div class="rm-input-row">
+                        <input type="text" id="ratingComment" placeholder="Share your thoughts...">
+                        <button class="rm-submit-btn" id="submitRatingBtn" type="button">Post</button>
+                    </div>
+                </div>
+
+                <div id="ratingMessage" class="mt-3"></div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script>
+    (function () {
+        let selectedStars = null;
+
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('ratingMessage');
+            if (!messageDiv) return;
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            messageDiv.innerHTML = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" style="filter:invert(1) opacity(0.5)"></button>
+                </div>`;
+            setTimeout(() => {
+                const a = messageDiv.querySelector('.alert');
+                if (a) a.remove();
+            }, 3000);
+        }
+
+        function getInitials(name) {
+            if (!name || name === 'Anonymous') return 'AN';
+            return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        }
+
+        function getAvatarColor(name) {
+            const colors = ['#1D9E75', '#378ADD', '#D85A30', '#D4537E', '#7F77DD', '#BA7517', '#639922', '#0F6E56'];
+            let hash = 0;
+            const s = name || 'Anonymous';
+            for (let i = 0; i < s.length; i++) { hash = (hash << 5) - hash + s.charCodeAt(i); hash |= 0; }
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const d = document.createElement('div');
+            d.textContent = text;
+            return d.innerHTML;
+        }
+
+        async function loadRatings() {
+            const container = document.getElementById('ratingsList');
+            if (!container) return;
+            container.innerHTML = '<div style="text-align:center;color:#555;padding:1.5rem 0;font-size:14px;">Loading comments...</div>';
+            try {
+                const res = await fetch('/api/Rating/ratings');
+                if (!res.ok) throw new Error();
+                displayRatings(await res.json());
+            } catch {
+                container.innerHTML = '<div style="text-align:center;color:#555;padding:1.5rem 0;font-size:14px;">Unable to load comments.</div>';
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/Rating/stats');
+                if (!res.ok) throw new Error();
+                const stats = await res.json();
+                const avg = stats.averageStars || 0;
+                document.getElementById('modalAverageRating').textContent = avg.toFixed(1);
+                document.getElementById('modalRatingCount').textContent = (stats.totalRatings || 0) + ' ratings';
+                document.getElementById('userCount').textContent = stats.totalRatings || 0;
+                const disp = document.getElementById('modalStarsDisplay');
+                if (disp) {
+                    const full = Math.floor(avg);
+                    disp.innerHTML = '';
+                    for (let i = 1; i <= 5; i++)
+                        disp.innerHTML += i <= full ? '<span class="star">★</span>' : '<span class="star empty">☆</span>';
+                }
+            } catch (e) { console.error('Stats error:', e); }
+        }
+
+        function displayRatings(ratings) {
+            const container = document.getElementById('ratingsList');
+            if (!container) return;
+            if (!ratings || ratings.length === 0) {
+                container.innerHTML = '<div style="text-align:center;color:#555;padding:1.5rem 0;font-size:14px;">No comments yet. Be the first!</div>';
+                return;
+            }
+            container.innerHTML = '';
+            ratings.forEach(function(r) {
+                const stars = r.stars || 0;
+                let starsHtml = '';
+                for (let i = 1; i <= 5; i++)
+                    starsHtml += i <= stars ? '<span>★</span>' : '<span class="empty">☆</span>';
+                const userName = r.userName || r.clubName || 'Anonymous';
+                const color = getAvatarColor(userName);
+                const initials = getInitials(userName);
+                const date = new Date(r.createdAt).toLocaleDateString();
+                const avatarHtml = (r.userImage && r.userImage !== 'null')
+                    ? '<img src="' + escapeHtml(r.userImage) + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
+                    : initials;
+                container.innerHTML += '<div class="rm-comment-item">'
+                    + '<div class="rm-avatar" style="background:' + color + '">' + avatarHtml + '</div>'
+                    + '<div style="flex:1;min-width:0;">'
+                    + '<div class="rm-comment-name">' + escapeHtml(userName) + '</div>'
+                    + '<div class="rm-comment-stars">' + starsHtml + '</div>'
+                    + '<p class="rm-comment-text">' + escapeHtml(r.comment || '') + '</p>'
+                    + '<div class="rm-comment-date">' + date + '</div>'
+                    + '</div></div>';
+            });
+        }
+
+        async function submitRating() {
+            const comment = document.getElementById('ratingComment');
+            const submitBtn = document.getElementById('submitRatingBtn');
+            const commentText = comment ? comment.value.trim() : '';
+            const starsValue = parseInt(selectedStars);
+
+            console.log('Submitting:', { stars: starsValue, comment: commentText });
+
+            if (!starsValue || starsValue < 1 || starsValue > 5) {
+                showMessage('Please select a star rating', 'error');
+                return;
+            }
+            if (!commentText) {
+                showMessage('Please enter a comment', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Posting...';
+
+            try {
+                const body = new URLSearchParams();
+                body.append('stars', starsValue);
+                body.append('comment', commentText);
+
+                const response = await fetch('/api/Rating/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: body
+                });
+
+                console.log('Status:', response.status);
+                const data = await response.json();
+                console.log('Data:', data);
+
+                if (data.success) {
+                    comment.value = '';
+                    document.querySelectorAll('input[name="modal-rating"]').forEach(function(i) { i.checked = false; });
+                    selectedStars = null;
+                    showMessage('Comment posted!', 'success');
+                    setTimeout(async function() { await loadRatings(); await loadStats(); }, 500);
+                } else {
+                    showMessage(data.message || 'Failed to post', 'error');
+                }
+            } catch (err) {
+                console.error('Submit error:', err);
+                showMessage('Error posting. Please try again.', 'error');
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Post';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            document.addEventListener('change', function (e) {
+                if (e.target && e.target.name === 'modal-rating') {
+                    selectedStars = parseInt(e.target.value);
+                    console.log('Star selected:', selectedStars);
+                }
+            });
+
+            var submitBtn = document.getElementById('submitRatingBtn');
+            if (submitBtn) submitBtn.addEventListener('click', submitRating);
+
+            var commentInput = document.getElementById('ratingComment');
+            if (commentInput) {
+                commentInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        submitRating();
+                    }
+                });
+            }
+
+            var modal = document.getElementById('ratingModal');
+            if (modal) {
+                modal.addEventListener('show.bs.modal', function () {
+                    loadRatings();
+                    loadStats();
+                    document.querySelectorAll('input[name="modal-rating"]').forEach(function(i) { i.checked = false; });
+                    var c = document.getElementById('ratingComment');
+                    if (c) c.value = '';
+                    selectedStars = null;
+                    var m = document.getElementById('ratingMessage');
+                    if (m) m.innerHTML = '';
+                });
+            }
+
+        });
+
+    })();
+</script>

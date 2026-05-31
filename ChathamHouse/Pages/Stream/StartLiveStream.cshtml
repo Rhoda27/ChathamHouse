@@ -1,0 +1,208 @@
+﻿@page
+@model ChathamHouse.Pages.Stream.StartLiveStreamModel
+@{
+    ViewData["Title"] = "Go Live";
+}
+
+<body>
+
+    <div class="header">
+        <h1>
+            🎥 ChathamHouse LIVE
+            <span class="live-badge">LIVE</span>
+        </h1>
+    </div>
+
+    <div class="container">
+        <div class="stream-container">
+            <video id="red5pro-subscriber" autoplay playsinline controls></video>
+        </div>
+
+        <div class="stream-status">
+            <span class="status-dot connecting" id="statusDot"></span>
+            <span id="statusText">Connecting to stream…</span>
+        </div>
+
+        <div class="info-box">
+            <p>📡 OBS Streaming Settings:</p>
+            <div class="obs-settings">
+                <strong>Server:</strong> rtmp://userId-2441-c10d446375.cloud.red5.net/live<br />
+                <strong>Stream Key:</strong> @Model.StreamName
+            </div>
+            <p>✅ Make sure OBS is streaming with the key above</p>
+            <button id="reconnectBtn">🔄 Reconnect</button>
+            <div id="errorDetail" class="error-detail"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© @DateTime.Now.Year ChathamHouse | Powered by Red5 Cloud</p>
+    </div>
+
+    <script>
+        // Red5 Cloud Settings
+        const STREAM_NAME = '@Model.StreamName';
+        const ENDPOINT_URL = '@Model.WhepEndpoint';
+
+        console.log('Stream Name:', STREAM_NAME);
+        console.log('Endpoint:', ENDPOINT_URL);
+
+        // DOM elements
+        const videoElement = document.getElementById('red5pro-subscriber');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const reconnectBtn = document.getElementById('reconnectBtn');
+        const errorDetail = document.getElementById('errorDetail');
+
+        function setStatus(state, message) {
+            if (statusDot) statusDot.className = 'status-dot ' + state;
+            if (statusText) statusText.textContent = message;
+            console.log('Status:', state, '-', message);
+        }
+
+        function showError(msg) {
+            if (errorDetail) {
+                errorDetail.innerHTML = msg;
+                errorDetail.style.display = 'block';
+            }
+            console.error(msg);
+        }
+
+        // Test if the stream exists by fetching the endpoint
+        async function testStreamConnection() {
+            try {
+                setStatus('connecting', 'Checking stream availability...');
+
+                const response = await fetch(ENDPOINT_URL);
+
+                if (response.status === 404) {
+                    showError('Stream not found. Make sure OBS is streaming with key: ' + STREAM_NAME);
+                    setStatus('offline', 'Stream offline');
+                    return false;
+                } else if (response.status === 400) {
+                    showError('Stream is not available. Please start OBS streaming with key: ' + STREAM_NAME);
+                    setStatus('offline', 'Stream offline');
+                    return false;
+                } else {
+                    setStatus('connecting', 'Stream found, connecting...');
+                    return true;
+                }
+            } catch (err) {
+                console.log('Stream check error:', err);
+                // Continue anyway - the stream might still work
+                return true;
+            }
+        }
+
+        // Try to load Red5 SDK from multiple sources
+        function loadRed5SDK() {
+            return new Promise((resolve, reject) => {
+                // Check if already loaded
+                if (typeof red5prosdk !== 'undefined') {
+                    resolve();
+                    return;
+                }
+
+                // Try multiple CDN sources
+                const cdnUrls = [
+                    'https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@14.2.0/red5pro-sdk.min.js',
+                    'https://unpkg.com/red5pro-webrtc-sdk@14.2.0/red5pro-sdk.min.js'
+                ];
+
+                let currentIndex = 0;
+
+                function tryNext() {
+                    if (currentIndex >= cdnUrls.length) {
+                        reject(new Error('Could not load Red5 SDK from any source'));
+                        return;
+                    }
+
+                    const script = document.createElement('script');
+                    script.src = cdnUrls[currentIndex];
+                    script.onload = () => resolve();
+                    script.onerror = () => {
+                        currentIndex++;
+                        tryNext();
+                    };
+                    document.head.appendChild(script);
+                }
+
+                tryNext();
+            });
+        }
+
+        async function startSubscriber() {
+            try {
+                setStatus('connecting', 'Loading SDK...');
+
+                // Load the SDK
+                await loadRed5SDK();
+                console.log('Red5 SDK loaded');
+
+                // Check if the stream exists first
+                await testStreamConnection();
+
+                setStatus('connecting', 'Connecting to stream...');
+
+                // Create subscriber
+                const subscriber = new red5prosdk.WHEPClient();
+
+                // Event handlers
+                subscriber.on('*', (event) => {
+                    console.log('Event:', event.type);
+                    if (event.type === 'SubscribeEvent.SUBSCRIBE_START') {
+                        setStatus('live', '🔴 LIVE');
+                        if (errorDetail) errorDetail.style.display = 'none';
+                    } else if (event.type === 'SubscribeEvent.SUBSCRIBE_FAIL') {
+                        setStatus('offline', 'Stream offline');
+                        showError('Connection failed. Make sure OBS is streaming with key: ' + STREAM_NAME);
+                    }
+                });
+
+                // Initialize
+                await subscriber.init({
+                    streamName: STREAM_NAME,
+                    endpoint: ENDPOINT_URL,
+                    connectionParams: {
+                        nodeGroup: 'default'
+                    }
+                });
+
+                // Subscribe
+                await subscriber.subscribe();
+                setStatus('live', '🔴 LIVE');
+
+                // Store for reconnection
+                window.currentSubscriber = subscriber;
+
+            } catch (err) {
+                console.error('Error:', err);
+                setStatus('offline', 'Connection failed');
+                showError('Error: ' + err.message + '. Make sure OBS is streaming with key: ' + STREAM_NAME);
+            }
+        }
+
+        function reconnect() {
+            if (window.currentSubscriber) {
+                try {
+                    window.currentSubscriber.unsubscribe();
+                } catch(e) {}
+                window.currentSubscriber = null;
+            }
+            if (videoElement && videoElement.srcObject) {
+                videoElement.srcObject = null;
+            }
+            if (errorDetail) errorDetail.style.display = 'none';
+            setTimeout(startSubscriber, 1000);
+        }
+
+        // Start when page loads
+        startSubscriber();
+
+        // Reconnect button
+        if (reconnectBtn) {
+            reconnectBtn.onclick = reconnect;
+        }
+    </script>
+
+</body>

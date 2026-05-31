@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "node-forge": "^1.4.0",
+    "node-media-server": "^4.2.4"
+  }
+}

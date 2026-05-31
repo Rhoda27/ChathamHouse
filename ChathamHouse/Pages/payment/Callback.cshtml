@@ -1,0 +1,274 @@
+﻿@page
+@model ChathamHouse.Pages.Payment.CallbackModel
+@{
+    ViewData["Title"] = "Payment";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500&display=swap');
+
+    .cb-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0f0f0f;
+        padding: 2rem 1rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .cb-card {
+        background: #1a1a1a;
+        border-radius: 20px;
+        padding: 3rem 2.5rem;
+        max-width: 440px;
+        width: 100%;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #2a2a2a;
+    }
+
+        .cb-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .cb-card.success::before {
+            background: linear-gradient(90deg, #1D9E75, #5DCAA5);
+        }
+
+        .cb-card.error::before {
+            background: linear-gradient(90deg, #E24B4A, #F09595);
+        }
+
+        .cb-card.pending::before {
+            background: linear-gradient(90deg, #BA7517, #EF9F27);
+        }
+
+    .cb-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.75rem;
+        font-size: 32px;
+    }
+
+        .cb-icon.success {
+            background: #0d2e22;
+            color: #5DCAA5;
+        }
+
+        .cb-icon.error {
+            background: #2e0d0d;
+            color: #F09595;
+        }
+
+        .cb-icon.pending {
+            background: #2e1f05;
+            color: #EF9F27;
+        }
+
+    .cb-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 28px;
+        color: #ffffff;
+        margin: 0 0 0.75rem;
+    }
+
+    .cb-subtitle {
+        font-size: 15px;
+        color: #888;
+        line-height: 1.65;
+        margin: 0 0 2rem;
+    }
+
+    .cb-ref {
+        font-size: 11px;
+        color: #444;
+        letter-spacing: 1px;
+        font-family: monospace;
+        background: #111;
+        border-radius: 8px;
+        padding: 8px 12px;
+        margin-bottom: 2rem;
+        display: block;
+    }
+
+    .cb-divider {
+        border: none;
+        border-top: 1px solid #2a2a2a;
+        margin: 0 0 1.75rem;
+    }
+
+    .cb-btn {
+        display: block;
+        width: 100%;
+        padding: 14px 20px;
+        border-radius: 12px;
+        font-size: 15px;
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        transition: opacity 0.15s, transform 0.1s;
+        margin-bottom: 10px;
+        border: none;
+    }
+
+        .cb-btn:hover {
+            opacity: 0.88;
+            transform: translateY(-1px);
+            text-decoration: none;
+        }
+
+        .cb-btn:active {
+            transform: scale(0.98);
+        }
+
+    .cb-btn-primary {
+        background: #ffffff;
+        color: #0f0f0f;
+    }
+
+    .cb-btn-ghost {
+        background: transparent;
+        color: #888;
+        border: 1px solid #2a2a2a;
+    }
+
+        .cb-btn-ghost:hover {
+            color: #fff;
+            border-color: #444;
+        }
+
+    .cb-amount {
+        font-family: 'Playfair Display', serif;
+        font-size: 42px;
+        color: #fff;
+        margin: 0 0 0.25rem;
+    }
+
+    .cb-amount-label {
+        font-size: 12px;
+        color: #555;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin: 0 0 1.75rem;
+    }
+
+    .cb-progress-track {
+        background: #111;
+        border-radius: 99px;
+        height: 4px;
+        overflow: hidden;
+        margin-top: 1.5rem;
+    }
+
+    .cb-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #BA7517, #EF9F27);
+        border-radius: 99px;
+        animation: cbprogress 2s ease-in-out infinite alternate;
+    }
+
+    @@keyframes cbprogress {
+        from {
+            width: 15%;
+        }
+
+        to {
+            width: 90%;
+        }
+    }
+
+    .cb-spin {
+        animation: cbspin 1s linear infinite;
+        display: inline-block;
+    }
+
+    @@keyframes cbspin {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+
+<div class="cb-page">
+    <div class="col-12">
+
+        @if (Model.SuccessMessage != null)
+        {
+            <div class="cb-card success">
+                <div class="cb-icon success">
+                    <i class="fas fa-check"></i>
+                </div>
+                <p class="cb-amount">₦1,000</p>
+                <p class="cb-amount-label">Payment received</p>
+                <hr class="cb-divider" />
+                <h1 class="cb-title">Post published!</h1>
+                <p class="cb-subtitle">@Model.SuccessMessage</p>
+                <span class="cb-ref">TRANSACTION CONFIRMED</span>
+                @if (Model.PostId.HasValue)
+                {
+                    <a href="/post/details/@Model.PostId" class="cb-btn cb-btn-primary">
+                        <i class="fas fa-eye me-2"></i>View published post
+                    </a>
+                }
+                <a asp-page="/Land/Index" class="cb-btn cb-btn-ghost">
+                    <i class="fas fa-home me-2"></i>Go to home
+                </a>
+            </div>
+        }
+        else if (Model.ErrorMessage != null)
+        {
+            <div class="cb-card error">
+                <div class="cb-icon error">
+                    <i class="fas fa-times"></i>
+                </div>
+                <h1 class="cb-title">Payment failed</h1>
+                <p class="cb-subtitle">@Model.ErrorMessage Your account has not been charged.</p>
+                <hr class="cb-divider" />
+                <a asp-page="/post/create" class="cb-btn cb-btn-primary">
+                    <i class="fas fa-redo me-2"></i>Try again
+                </a>
+                <a asp-page="/Land/Index" class="cb-btn cb-btn-ghost">
+                    <i class="fas fa-home me-2"></i>Go to home
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="cb-card pending">
+                <div class="cb-icon pending">
+                    <span class="cb-spin"><i class="fas fa-circle-notch"></i></span>
+                </div>
+                <h1 class="cb-title">Verifying payment</h1>
+                <p class="cb-subtitle">Please wait while we confirm your transaction with Paystack. This usually takes a few seconds.</p>
+                <div class="cb-progress-track">
+                    <div class="cb-progress-bar"></div>
+                </div>
+            </div>
+
+            <script>
+                setTimeout(function () {
+                    location.reload();
+                }, 5000);
+            </script>
+        }
+
+    </div>
+</div>

@@ -1,0 +1,505 @@
+﻿@page
+@model ChathamHouse.Pages.Profiles.UsersModel
+@{
+    ViewData["Title"] = Model.ProfileUser?.ClubName ?? "User Profile";
+
+    string GetTimeAgo(DateTime dateTime)
+    {
+        var ts = DateTime.Now - dateTime;
+        return ts.TotalMinutes < 1 ? "just now" :
+               ts.TotalMinutes < 60 ? $"posted {ts.Minutes} min ago" :
+               ts.TotalHours < 24 ? $"posted {ts.Hours} hour{(ts.Hours > 1 ? "s" : "")} ago" :
+               ts.TotalDays < 7 ? $"posted {ts.Days} day{(ts.Days > 1 ? "s" : "")} ago" :
+               $"posted {ts.Days / 7} week{(ts.Days / 7 > 1 ? "s" : "")} ago";
+    }
+}
+
+<div class="container-fluid px-0">
+    <!-- Header/Navigation -->
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-dark bg-primary border-bottom box-shadow mb-4">
+            <div class="container-fluid">
+                <a class="navbar-brand h6 text-white" asp-area="" asp-page="/land/index">ChathamHouse</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse">
+                    <ul class="navbar-nav ms-auto align-items-center">
+                        <li class="nav-item">
+                            <a class="nav-link text-white me-auto fs-3" asp-area="" asp-page="#">What A Night Of Fun</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" asp-page="/Profiles/Edit">
+                                <i class="fa-solid fa-gear fs-2"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Profile Section -->
+    <div class="container">
+        <div class="row align-items-center mb-5">
+            <!-- Profile Image -->
+            <div class="col-md-4 text-center mb-4 mb-md-0">
+                <form method="post" enctype="multipart/form-data" asp-page-handler="UploadImage" id="uploadForm">
+                    @Html.AntiForgeryToken()
+
+                    <label for="fileUpload" style="cursor: pointer;">
+                        <img id="profilePreview"
+                             src="@((Model.ProfileUser?.Image ?? "/images/default.png") + "?v=" + Guid.NewGuid())"
+                             class="rounded-circle border border-3 border-primary"
+                             width="190"
+                             height="180"
+                             style="object-fit: cover; transition: transform 0.3s ease;"
+                             onmouseover="this.style.transform='scale(1.05)'"
+                             onmouseout="this.style.transform='scale(1)'" />
+                    </label>
+
+                    <input type="file"
+                           id="fileUpload"
+                           asp-for="ImageFile"
+                           hidden
+                            />
+                    
+                </form>
+            </div>
+
+            <!-- Profile Info -->
+            <div class="col-md-8">
+                <div class="d-flex flex-column">
+                    <div class="d-flex align-items-start mb-3">
+                        <h2 class="display-6 fw-bold mb-0">@Model.ProfileUser?.ClubName</h2>
+
+                        <form method="post" asp-page-handler="Follow" class="d-inline ms-5">
+                            <input type="hidden" name="userId" value="@Model.ProfileUser?.Id" />
+                            <button class="btn @(Model.IsFollowing ? "btn-outline-danger" : "btn-primary") btn-lg px-4">
+                                @(Model.IsFollowing ? "Unfollow" : "Follow")
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="d-flex gap-5 mb-3">
+                        <div class="text-center">
+                            <span class="d-block h3 fw-bold mb-0">@Model.followerCount</span>
+                            <span class="text-muted">Followers</span>
+                        </div>
+                        <div class="text-center">
+                            <span class="d-block h3 fw-bold mb-0">@Model.folowingCount</span>
+                            <span class="text-muted">Following</span>
+                        </div>
+                        <div class="text-center">
+                            <span class="d-block h3 fw-bold mb-0">@Model.PostsCount</span>
+                            <span class="text-muted">Posts</span>
+                        </div>
+                    </div>
+
+                    <!-- Bio (optional) -->
+                    @if (!string.IsNullOrEmpty(Model.Profile?.Bio))
+                    {
+                        <div class="mt-2 p-3 bg-light rounded">
+                            <p class="mb-0">@Model.Profile.Bio</p>
+                        </div>
+                    } 
+                </div>
+            </div>
+        </div>
+
+        <!-- Posts Section -->
+        <h4>Posts</h4>
+        <hr />
+
+@* Antiforgery token for fetch requests *@
+        <form id="antiforgery-form">
+            @Html.AntiForgeryToken()
+        </form>
+
+        <div class="container-fluid mt-4">
+
+            @if (Model.Posts != null && Model.Posts.Any())
+            {
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    @foreach (var Post in Model.Posts)
+                    {
+                        <div class="col" data-post-id="@Post.Id">
+                            <div class="card w-100 h-100">
+
+                                <!-- Post Header -->
+                                <div class="px-3 pt-3">
+                                    <div class="d-flex align-items-center gap-2">
+
+                                        @if (string.IsNullOrEmpty(Post.UserImage))
+                                        {
+                                            <i class="fa-solid fa-circle-user fs-3 text-muted"></i>
+                                        }
+                                        else
+                                        {
+                                            <img src="@Post.UserImage"
+                                                 class="rounded-circle"
+                                                 width="45" height="45"
+                                                 style="object-fit: cover;">
+                                        }
+
+                                        <div class="flex-grow-1 text-start">
+                                            <h6 class="mb-0 fw-bold">@Post.UserName</h6>
+                                            @if (!string.IsNullOrEmpty(Post.Location))
+                                            {
+                                                <small class="text-muted">
+                                                    <i class="fa-solid fa-location-dot"></i> @Post.Location
+                                                </small>
+                                            }
+                                        </div>
+
+                                        <!-- Three dot menu (only own posts) -->
+                                        @if (Model.CurrentUserId == Post.PostUserId)
+                                        {
+                                            <div class="dropdown">
+                                                <i class="fa-solid fa-ellipsis-vertical text-muted"
+                                                   style="cursor: pointer;"
+                                                   data-bs-toggle="dropdown"></i>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li>
+                                                        <a class="dropdown-item" asp-page="/Setting/Edit">
+                                                            <i class="fa-regular fa-pen-to-square me-2"></i>Edit
+                                                        </a>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <a class="dropdown-item text-danger delete-post"
+                                                           data-post-id="@Post.Id" href="#">
+                                                            <i class="fa-regular fa-trash-can me-2"></i>Delete
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <div class="mt-1 mb-2">
+                                        <small class="text-muted">@GetTimeAgo(Post.CreatedAt)</small>
+                                    </div>
+                                </div>
+
+                                <!-- Post Title -->
+                                @if (!string.IsNullOrEmpty(Post.Name))
+                                {
+                                    <div class="px-3 mb-2">
+                                        <h5 class="fw-bold mb-0">@Post.Name</h5>
+                                    </div>
+                                }
+
+                            <!-- Post Content -->
+                            <div class="card-text px-3 mb-3">
+                                <input type="checkbox" id="see-more-@Post.Id"
+                                       class="see-more-checkbox" style="display: none;">
+                                <div class="description-limited">
+                                    <span class="short-text">
+                                        @(Post.Content.Length > 80
+                                                                            ? Post.Content.Substring(0, 80) + "..."
+                                                                            : Post.Content)
+                                </span>
+                                <span class="full-text" style="display: none;">
+                                    @Post.Content
+                                </span>
+                                @if (Post.Content.Length > 80)
+                                        {
+                                            <label for="see-more-@Post.Id"
+                                                   class="see-more-label text-dark"
+                                                   style="cursor: pointer;">
+                                                see more
+                                            </label>
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- Post Image -->
+                                <div style="height: 400px; overflow: hidden;">
+                                    <img src="@Post.ImageUrl"
+                                         class="w-100 h-100"
+                                         style="object-fit: cover;"
+                                         alt="Post image" />
+                                </div>
+
+                                <!-- Like, Comment, Share, Save -->
+                                <div class="card-body">
+                                    <div class="d-flex gap-3 align-items-center">
+                                        <button class="btn-like" data-post-id="@Post.Id">
+                                            @if (Post.IsLikedByUser)
+                                            {
+                                                <i class="fas fa-heart fs-4" style="color: #dc3545;"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-heart fs-4" style="color: #f8f9fa;"></i>
+                                            }
+                                        </button>
+                                        <span class="like-count fs-5 fw-bold text-light"
+                                              data-post-id="@Post.Id">@Post.LikeCount</span>
+
+                                        <button class="btn-comment" data-post-id="@Post.Id">
+                                            <i class="fas fa-comment-dots fs-4 text-light"></i>
+                                        </button>
+                                        <span class="comment-count fs-5 fw-bold text-light"
+                                              data-post-id="@Post.Id">@Post.CommentCount</span>
+
+                                        <button class="btn-share" data-post-id="@Post.Id">
+                                            <i class="fas fa-paper-plane fs-4 text-light"></i>
+                                        </button>
+
+                                        <button class="btn-save ms-auto" data-post-id="@Post.Id">
+                                            @if (Post.IsSavedByUser)
+                                            {
+                                                <i class="fas fa-bookmark fs-4" style="color: #ffc107;"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-bookmark fs-4 text-light"></i>
+                                            }
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <!-- Empty state: user hasn't followed anyone yet -->
+                <div class="text-center py-5">
+                    <i class="fa-solid fa-users fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Your feed is empty</h5>
+                    <p class="text-muted">Follow people on the explore page to see their posts here.</p>
+                    <a asp-page="/Index" class="btn btn-primary">
+                        <i class="fa-solid fa-globe me-2"></i>Explore Posts
+                    </a>
+                </div>
+            }
+        </div>
+
+        <!-- Bottom nav -->
+        <div class="fixed-bottom py-2 border-top" style="background: #1a1a1a;">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-around text-white">
+                    <a asp-page="/Index" class="nav-link text-light fw-bold fs-5">
+                        <i class="fa-solid fa-globe"></i>
+                    </a>
+                    <a asp-page="/post/Create" class="nav-link text-light fw-bold fs-5">
+                        <i class="fa-solid fa-plus"></i>
+                    </a>
+                    <a asp-page="/Profiles/Users" class="nav-link text-light fw-bold fs-5">
+                        <i class="fa-solid fa-user"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comment Modal -->
+        <div class="modal fade" id="commentModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Comments</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="commentsList" class="mb-3"></div>
+                        <div class="input-group">
+                            <input type="text" id="commentInput" class="form-control"
+                                   placeholder="Add a comment...">
+                            <button class="btn btn-primary" id="submitCommentBtn">Post</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+@section Scripts {
+            <script>
+                let currentPostId = null;
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                document.addEventListener("DOMContentLoaded", function () {
+                    initializeLikeButtons();
+                    initializeSaveButtons();
+                    initializeCommentButtons();
+                    initializeShareButtons();
+                    initializeSeeMore();
+                });
+
+                function initializeLikeButtons() {
+                    document.body.addEventListener('click', async function (e) {
+                        const btn = e.target.closest('.btn-like');
+                        if (!btn) return;
+                        e.preventDefault();
+                        const postId = btn.dataset.postId;
+                        const likeCountSpan = document.querySelector(`.like-count[data-post-id="${postId}"]`);
+                        try {
+                            const response = await fetch(`/api/posts/${postId}/like`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'RequestVerificationToken': token
+                                }
+                            });
+                            const data = await response.json();
+                            if (data.success) {
+                                btn.innerHTML = data.liked
+                                    ? `<i class="fas fa-heart fs-4" style="color: #dc3545;"></i>`
+                                    : `<i class="fas fa-heart fs-4" style="color: #f8f9fa;"></i>`;
+                                if (likeCountSpan) likeCountSpan.textContent = data.likeCount;
+                            }
+                        } catch (err) { console.error('Like error:', err); }
+                    });
+                }
+
+                function initializeSaveButtons() {
+                    document.body.addEventListener('click', async function (e) {
+                        const btn = e.target.closest('.btn-save');
+                        if (!btn) return;
+                        e.preventDefault();
+                        const postId = btn.dataset.postId;
+                        try {
+                            const response = await fetch(`/api/posts/${postId}/save`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'RequestVerificationToken': token
+                                }
+                            });
+                            const data = await response.json();
+                            if (data.success) {
+                                btn.innerHTML = data.saved
+                                    ? `<i class="fas fa-bookmark fs-4" style="color: #ffc107;"></i>`
+                                    : `<i class="fas fa-bookmark fs-4 text-light"></i>`;
+                            }
+                        } catch (err) { console.error('Save error:', err); }
+                    });
+                }
+
+                function initializeCommentButtons() {
+                    document.body.addEventListener('click', async function (e) {
+                        const btn = e.target.closest('.btn-comment');
+                        if (!btn) return;
+                        e.preventDefault();
+                        currentPostId = btn.dataset.postId;
+                        await loadComments(currentPostId);
+                        new bootstrap.Modal(document.getElementById('commentModal')).show();
+                    });
+
+                    document.getElementById('submitCommentBtn')?.addEventListener('click', async function () {
+                        const content = document.getElementById('commentInput').value.trim();
+                        if (!content || !currentPostId) return;
+                        try {
+                            const response = await fetch(`/api/posts/${currentPostId}/comment`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'RequestVerificationToken': token
+                                },
+                                body: JSON.stringify({ content })
+                            });
+                            const data = await response.json();
+                            if (data.success) {
+                                document.getElementById('commentInput').value = '';
+                                await loadComments(currentPostId);
+                                const span = document.querySelector(`.comment-count[data-post-id="${currentPostId}"]`);
+                                if (span) span.textContent = data.commentCount;
+                                bootstrap.Modal.getInstance(document.getElementById('commentModal')).hide();
+                            }
+                        } catch (err) { console.error('Comment error:', err); }
+                    });
+                }
+
+                function initializeShareButtons() {
+                    document.body.addEventListener('click', function (e) {
+                        const btn = e.target.closest('.btn-share');
+                        if (!btn) return;
+                        e.preventDefault();
+                        const postId = btn.dataset.postId;
+                        const url = `${window.location.origin}/post/${postId}`;
+                        navigator.clipboard.writeText(url).then(() => alert('Link copied!'));
+                    });
+                }
+
+                async function loadComments(postId) {
+                    try {
+                        const response = await fetch(`/api/posts/${postId}/comments`);
+                        const comments = await response.json();
+                        const list = document.getElementById('commentsList');
+                        list.innerHTML = comments.length === 0
+                            ? '<p class="text-muted text-center">No comments yet.</p>'
+                            : comments.map(c => `
+                                <div class="comment-item mb-2 pb-2 border-bottom">
+                                    <strong>${escapeHtml(c.userName)}</strong>
+                                    <p class="mb-0">${escapeHtml(c.content)}</p>
+                                    <small class="text-muted">${new Date(c.createdAt).toLocaleString()}</small>
+                                </div>`).join('');
+                    } catch (err) { console.error('Load comments error:', err); }
+                }
+
+                function initializeSeeMore() {
+                    document.querySelectorAll('.see-more-checkbox').forEach(checkbox => {
+                        checkbox.addEventListener('change', function () {
+                            const container = this.nextElementSibling;
+                            const shortText = container.querySelector('.short-text');
+                            const fullText = container.querySelector('.full-text');
+                            const label = container.querySelector('.see-more-label');
+                            if (this.checked) {
+                                shortText.style.display = 'none';
+                                fullText.style.display = 'inline';
+                                if (label) label.textContent = ' see less';
+                            } else {
+                                shortText.style.display = 'inline';
+                                fullText.style.display = 'none';
+                                if (label) label.textContent = ' see more';
+                            }
+                        });
+                    });
+                }
+
+                function escapeHtml(text) {
+                    const div = document.createElement('div');
+                    div.textContent = text;
+                    return div.innerHTML;
+                }
+            </script>
+}
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+        <style>
+            .btn-like, .btn-save, .btn-comment, .btn-share {
+                background: none;
+                border: none;
+                cursor: pointer;
+                transition: transform 0.2s;
+                padding: 0;
+            }
+
+                .btn-like:hover, .btn-save:hover, .btn-comment:hover, .btn-share:hover {
+                    transform: scale(1.1);
+                }
+
+            .card {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+
+                .card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+                }
+
+            .description-limited {
+                line-height: 1.5;
+            }
+
+            body {
+                padding-bottom: 70px; /* space for fixed bottom nav */
+            }
+        </style>

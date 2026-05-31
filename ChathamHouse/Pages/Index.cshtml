@@ -1,0 +1,549 @@
+﻿@page
+@model ChathamHouse.Pages.IndexModel
+@{
+    ViewData["Title"] = "Chatham House";
+
+    string GetTimeAgo(DateTime dateTime)
+    {
+        var ts = DateTime.Now - dateTime;
+        return ts.TotalMinutes < 1 ? "just now" :
+               ts.TotalMinutes < 60 ? $"posted {ts.Minutes} min ago" :
+               ts.TotalHours < 24 ? $"posted {ts.Hours} hour{(ts.Hours > 1 ? "s" : "")} ago" :
+               ts.TotalDays < 7 ? $"posted {ts.Days} day{(ts.Days > 1 ? "s" : "")} ago" :
+               $"posted {ts.Days / 7} week{(ts.Days / 7 > 1 ? "s" : "")} ago";
+    }
+}
+
+<header>
+    <nav class="navbar navbar-expand-sm navbar-light border-bottom box-shadow mb-3">
+        <div class="container-fluid">
+            <a class="navbar-brand h6 text-light" asp-page="/Index">ChathamHouse</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="navbar-collapse collapse">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link text-light me-auto fs-3" asp-page="#">What A Night Of Fun</a>
+                    </li>
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-light fs-3" data-bs-toggle="dropdown">
+                                @if (string.IsNullOrEmpty(Model.ProfileUser?.Image))
+                                {
+                                    <i class="fa-solid fa-circle-user fs-2"></i>
+                                }
+                                else
+                                {
+                                    <img src="@Model.ProfileUser.Image"
+                                         class="rounded-circle"
+                                         width="40" height="40"
+                                         style="object-fit: cover;">
+                                }
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a asp-page="/Land/Index" class="dropdown-item">
+                                        <i class="fa-solid fa-house me-2"></i>My Dashboard
+                                    </a>
+                                </li>
+                                <li>
+                                    <a asp-page="/Profiles/Users" class="dropdown-item">
+                                        <i class="fa-solid fa-user me-2"></i>Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a asp-page="/Setting/Edit" class="dropdown-item">
+                                        <i class="fa-solid fa-gear me-2"></i>Settings
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" asp-page="/Land/Index" asp-page-handler="SignOut">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item border-0 bg-transparent text-danger">
+                                            <i class="fa-solid fa-right-from-bracket me-2"></i>Sign Out
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a asp-page="/Form/Login" asp-route-returnUrl="/Index"
+                               class="btn btn-secondary ms-2">Login</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+@* Antiforgery token for fetch requests *@
+<form id="antiforgery-form">
+    @Html.AntiForgeryToken()
+</form>
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-center me-3">🌍 International Market</h2>
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="marketswitch" />
+            <label class="form-check-label ms-2" for="marketswitch" id="switchLabel">
+                🌍 Show International Posts
+            </label>
+        </div>
+    </div>
+
+    @if (Model.Posts != null && Model.Posts.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="localPostsList">
+            @foreach (var Post in Model.Posts)
+            {
+                var isNigeria = !string.IsNullOrEmpty(Post.Location) &&
+                Post.Location.IndexOf("Nigeria", StringComparison.OrdinalIgnoreCase) >= 0;
+
+                <div class="col post-item"
+                     data-post-id="@Post.Id"
+                     data-country="@(isNigeria ? "nigeria" : "international")">
+                    <div class="card w-100 h-100">
+
+                        <!-- Post Header -->
+                        <div class="px-3 pt-3">
+                            <div class="d-flex align-items-center gap-2">
+
+                                @if (string.IsNullOrEmpty(Post.UserImage))
+                                {
+                                    <i class="fa-solid fa-circle-user fs-3 text-muted"></i>
+                                }
+                                else
+                                {
+                                    <img src="@Post.UserImage"
+                                         class="rounded-circle"
+                                         width="45" height="45"
+                                         style="object-fit: cover;">
+                                }
+
+                                <div class="flex-grow-1 text-start">
+                                    <h6 class="mb-0 fw-bold">@Post.UserName</h6>
+                                    @if (!string.IsNullOrEmpty(Post.Location))
+                                    {
+                                        <small class="text-muted">
+                                            <i class="fa-solid fa-location-dot"></i> @Post.Location
+                                        </small>
+                                    }
+                                </div>
+
+                                <!-- Follow button -->
+                                @if (!User.Identity.IsAuthenticated)
+                                {
+                                    <a asp-page="/Form/Login" asp-route-returnUrl="/Index"
+                                       class="btn btn-sm btn-outline-primary rounded-3">
+                                        Follow
+                                    </a>
+                                }
+                                else if (Model.CurrentUserId != Post.PostUserId)
+                                {
+                                    <button class="btn btn-sm @(Post.IsFollowedByUser ? "btn-primary" : "btn-outline-primary") btn-follow"
+                                            data-user-id="@Post.PostUserId">
+                                        @(Post.IsFollowedByUser ? "Following" : "Follow")
+                                    </button>
+                                }
+                            </div>
+
+                            <div class="mt-1 mb-2">
+                                <small class="text-muted">@GetTimeAgo(Post.CreatedAt)</small>
+                            </div>
+                        </div>
+
+                        <!-- Post Title -->
+                        @if (!string.IsNullOrEmpty(Post.Name))
+                        {
+                            <div class="px-3 mb-2">
+                                <h5 class="fw-bold mb-0">@Post.Name</h5>
+                            </div>
+                        }
+
+                    <!-- Post Content -->
+                    <div class="card-text px-3 mb-3">
+                        <input type="checkbox" id="see-more-@Post.Id"
+                               class="see-more-checkbox" style="display: none;">
+                        <div class="description-limited">
+                            <span class="short-text">
+                                @(Post.Content.Length > 80
+                                                            ? Post.Content.Substring(0, 80) + "..."
+                                                            : Post.Content)
+                        </span>
+                        <span class="full-text" style="display: none;">
+                            @Post.Content
+                        </span>
+                        @if (Post.Content.Length > 80)
+                                {
+                                    <label for="see-more-@Post.Id"
+                                           class="see-more-label text-dark"
+                                           style="cursor: pointer;">
+                                        see more
+                                    </label>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Post Image -->
+                        <div style="height: 400px; overflow: hidden;">
+                            <img src="@Post.ImageUrl"
+                                 class="w-100 h-100"
+                                 style="object-fit: cover;"
+                                 alt="Post image" />
+                        </div>
+
+                        <!-- Like, Comment, Share, Save -->
+                        <div class="card-body">
+                            <div class="d-flex gap-3 align-items-center">
+
+                                @if (User.Identity.IsAuthenticated)
+                                {
+                                    <button class="btn-like" data-post-id="@Post.Id">
+                                        @if (Post.IsLikedByUser)
+                                        {
+                                            <i class="fas fa-heart fs-4" style="color: #dc3545;"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-heart fs-4" style="color: #f8f9fa;"></i>
+                                        }
+                                    </button>
+                                }
+                                else
+                                {
+                                    <a asp-page="/Form/Login" asp-route-returnUrl="/Index">
+                                        <i class="fas fa-heart fs-4" style="color: #f8f9fa;"></i>
+                                    </a>
+                                }
+                                <span class="like-count fs-5 fw-bold text-light"
+                                      data-post-id="@Post.Id">@Post.LikeCount</span>
+
+                                <button class="btn-comment" data-post-id="@Post.Id">
+                                    <i class="fas fa-comment-dots fs-4 text-light"></i>
+                                </button>
+                                <span class="comment-count fs-5 fw-bold text-light"
+                                      data-post-id="@Post.Id">@Post.CommentCount</span>
+
+                                <button class="btn-share" data-post-id="@Post.Id">
+                                    <i class="fas fa-paper-plane fs-4 text-light"></i>
+                                </button>
+
+                                @if (User.Identity.IsAuthenticated)
+                                {
+                                    <button class="btn-save ms-auto" data-post-id="@Post.Id">
+                                        @if (Post.IsSavedByUser)
+                                        {
+                                            <i class="fas fa-bookmark fs-4" style="color: #ffc107;"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-bookmark fs-4 text-light"></i>
+                                        }
+                                    </button>
+                                }
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="fa-solid fa-camera fa-3x text-muted mb-3"></i>
+            <p class="text-muted fs-5">No posts yet. Be the first to post!</p>
+            @if (!User.Identity.IsAuthenticated)
+            {
+                <a asp-page="/Form/Login" asp-route-returnUrl="/Index"
+                   class="btn btn-primary">Login to Post</a>
+            }
+        </div>
+    }
+</div>
+
+<!-- Comment Modal -->
+<div class="modal fade" id="commentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Comments</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="commentsList" class="mb-3"></div>
+                <div class="input-group">
+                    <input type="text" id="commentInput" class="form-control"
+                           placeholder="@(User.Identity.IsAuthenticated ? "Add a comment..." : "Login to comment")">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <button class="btn btn-primary" id="submitCommentBtn">Post</button>
+                    }
+                    else
+                    {
+                        <a asp-page="/Form/Login" asp-route-returnUrl="/Index"
+                           class="btn btn-primary">Login</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentPostId = null;
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+        document.addEventListener("DOMContentLoaded", function () {
+            initializeLikeButtons();
+            initializeSaveButtons();
+            initializeCommentButtons();
+            initializeShareButtons();
+            initializeFollowButtons();
+            initializeMarketToggle();
+            initializeSeeMore();
+        });
+
+        function initializeMarketToggle() {
+            const toggle = document.getElementById('marketswitch');
+            const switchLabel = document.getElementById('switchLabel');
+            if (!toggle) return;
+            const posts = document.querySelectorAll('.post-item');
+            toggle.addEventListener('change', function () {
+                const showOnlyNigeria = this.checked;
+                posts.forEach(post => {
+                    const country = post.getAttribute('data-country');
+                    post.style.display = showOnlyNigeria
+                        ? (country === 'nigeria' ? '' : 'none') : '';
+                });
+                switchLabel.innerHTML = this.checked
+                    ? '🇳🇬 Show Local Posts Only (Nigeria)'
+                    : '🌍 Show International Posts';
+                switchLabel.style.color = this.checked ? '#27ae60' : '';
+            });
+        }
+
+        function initializeLikeButtons() {
+            document.body.addEventListener('click', async function (e) {
+                const btn = e.target.closest('.btn-like');
+                if (!btn) return;
+                e.preventDefault();
+                const postId = btn.dataset.postId;
+                const likeCountSpan = document.querySelector(`.like-count[data-post-id="${postId}"]`);
+                try {
+                    const response = await fetch(`/api/posts/${postId}/like`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        btn.innerHTML = data.liked
+                            ? `<i class="fas fa-heart fs-4" style="color: #dc3545;"></i>`
+                            : `<i class="fas fa-heart fs-4" style="color: #f8f9fa;"></i>`;
+                        if (likeCountSpan) likeCountSpan.textContent = data.likeCount;
+                    }
+                } catch (err) { console.error('Like error:', err); }
+            });
+        }
+
+        function initializeSaveButtons() {
+            document.body.addEventListener('click', async function (e) {
+                const btn = e.target.closest('.btn-save');
+                if (!btn) return;
+                e.preventDefault();
+                const postId = btn.dataset.postId;
+                try {
+                    const response = await fetch(`/api/posts/${postId}/save`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        btn.innerHTML = data.saved
+                            ? `<i class="fas fa-bookmark fs-4" style="color: #ffc107;"></i>`
+                            : `<i class="fas fa-bookmark fs-4 text-light"></i>`;
+                    }
+                } catch (err) { console.error('Save error:', err); }
+            });
+        }
+
+        function initializeFollowButtons() {
+            document.body.addEventListener('click', async function (e) {
+                const btn = e.target.closest('.btn-follow');
+                if (!btn) return;
+                e.preventDefault();
+                const userId = btn.dataset.userId;
+                try {
+                    const response = await fetch('/Profiles/Users?handler=FollowApi', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        },
+                        body: JSON.stringify({ userId: userId })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        // Update button — stay on /Index
+                        btn.textContent = data.following ? 'Following' : 'Follow';
+                        btn.classList.toggle('btn-outline-primary', !data.following);
+                        btn.classList.toggle('btn-primary', data.following);
+                    }
+                } catch (err) { console.error('Follow error:', err); }
+            });
+        }
+
+        function initializeCommentButtons() {
+            document.body.addEventListener('click', async function (e) {
+                const btn = e.target.closest('.btn-comment');
+                if (!btn) return;
+                e.preventDefault();
+                currentPostId = btn.dataset.postId;
+                await loadComments(currentPostId);
+                new bootstrap.Modal(document.getElementById('commentModal')).show();
+            });
+
+            document.getElementById('submitCommentBtn')?.addEventListener('click', async function () {
+                const content = document.getElementById('commentInput').value.trim();
+                if (!content || !currentPostId) return;
+                try {
+                    const response = await fetch(`/api/posts/${currentPostId}/comment`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        },
+                        body: JSON.stringify({ content })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        document.getElementById('commentInput').value = '';
+                        await loadComments(currentPostId);
+                        const span = document.querySelector(`.comment-count[data-post-id="${currentPostId}"]`);
+                        if (span) span.textContent = data.commentCount;
+                        // Stay on /Index — just close modal
+                        bootstrap.Modal.getInstance(document.getElementById('commentModal')).hide();
+                    }
+                } catch (err) { console.error('Comment error:', err); }
+            });
+        }
+
+        function initializeShareButtons() {
+            document.body.addEventListener('click', function (e) {
+                const btn = e.target.closest('.btn-share');
+                if (!btn) return;
+                e.preventDefault();
+                const postId = btn.dataset.postId;
+                const url = `${window.location.origin}/post/${postId}`;
+                navigator.clipboard.writeText(url).then(() => alert('Link copied!'));
+            });
+        }
+
+        async function loadComments(postId) {
+            try {
+                const response = await fetch(`/api/posts/${postId}/comments`);
+                const comments = await response.json();
+                const list = document.getElementById('commentsList');
+                list.innerHTML = comments.length === 0
+                    ? '<p class="text-muted text-center">No comments yet.</p>'
+                    : comments.map(c => `
+                        <div class="comment-item mb-2 pb-2 border-bottom">
+                            <strong>${escapeHtml(c.userName)}</strong>
+                            <p class="mb-0">${escapeHtml(c.content)}</p>
+                            <small class="text-muted">${new Date(c.createdAt).toLocaleString()}</small>
+                        </div>`).join('');
+            } catch (err) { console.error('Load comments error:', err); }
+        }
+
+        function initializeSeeMore() {
+            document.querySelectorAll('.see-more-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function () {
+                    const container = this.nextElementSibling;
+                    const shortText = container.querySelector('.short-text');
+                    const fullText = container.querySelector('.full-text');
+                    const label = container.querySelector('.see-more-label');
+                    if (this.checked) {
+                        shortText.style.display = 'none';
+                        fullText.style.display = 'inline';
+                        if (label) label.textContent = ' see less';
+                    } else {
+                        shortText.style.display = 'inline';
+                        fullText.style.display = 'none';
+                        if (label) label.textContent = ' see more';
+                    }
+                });
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+    .btn-like, .btn-save, .btn-comment, .btn-share {
+        background: none;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.2s;
+        padding: 0;
+    }
+
+        .btn-like:hover, .btn-save:hover, .btn-comment:hover,
+        .btn-share:hover, .btn-follow:hover {
+            transform: scale(1.1);
+        }
+
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+
+    .form-switch .form-check-input {
+        width: 3em;
+        height: 1.5em;
+        cursor: pointer;
+    }
+
+        .form-switch .form-check-input:checked {
+            background-color: #27ae60;
+            border-color: #27ae60;
+        }
+
+    #switchLabel {
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .description-limited {
+        line-height: 1.5;
+    }
+</style>

@@ -1,0 +1,596 @@
+﻿@page
+@model ChathamHouse.Pages.Profiles.EditProfileModel
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@@600;700&family=Outfit:wght@@300;400;500;600&display=swap');
+
+    :root {
+        --bg-deep: #08080d;
+        --bg-card: #0f0f16;
+        --bg-surface: #161620;
+        --bg-input: #13131a;
+        --gold: #c8a84b;
+        --gold-dim: rgba(200,168,75,0.13);
+        --gold-border: rgba(200,168,75,0.22);
+        --gold-hover: rgba(200,168,75,0.38);
+        --text-primary: #ede9e1;
+        --text-secondary: #7e7c8a;
+        --text-muted: #42404f;
+        --danger: #d95555;
+        --success: #4aab7a;
+        --radius-lg: 18px;
+        --radius-md: 12px;
+        --radius-sm: 8px;
+    }
+
+    *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        background: var(--bg-deep);
+        color: var(--text-primary);
+        font-family: 'Outfit', sans-serif;
+        min-height: 100vh;
+        padding-bottom: 100px;
+    }
+
+    /* ── Top bar ── */
+    .ep-topbar {
+        position: sticky;
+        top: 0;
+        z-index: 99;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 13px 20px;
+        background: rgba(8,8,13,0.88);
+        backdrop-filter: blur(18px);
+        border-bottom: 1px solid var(--gold-border);
+    }
+
+    .ep-back {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--bg-surface);
+        border: 1px solid var(--gold-border);
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all .2s;
+        flex-shrink: 0;
+    }
+
+        .ep-back:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+    .ep-topbar-text {
+        flex: 1;
+    }
+
+    .ep-topbar-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.2rem;
+        font-weight: 700;
+        letter-spacing: .02em;
+    }
+
+    .ep-topbar-sub {
+        font-size: .65rem;
+        color: var(--text-muted);
+        letter-spacing: .1em;
+        text-transform: uppercase;
+    }
+
+    /* ── Wrapper ── */
+    .ep-wrap {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 28px 18px;
+    }
+
+    /* ── Avatar block ── */
+    .avatar-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 32px;
+        animation: fadeUp .4s ease both;
+    }
+
+    .avatar-ring {
+        position: relative;
+        width: 108px;
+        height: 108px;
+        cursor: pointer;
+    }
+
+        .avatar-ring img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2.5px solid var(--gold-border);
+            transition: border-color .3s, transform .3s;
+            display: block;
+        }
+
+        .avatar-ring:hover img {
+            border-color: var(--gold);
+            transform: scale(1.04);
+        }
+
+    .avatar-edit-badge {
+        position: absolute;
+        bottom: 3px;
+        right: 3px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: var(--gold);
+        border: 2px solid var(--bg-deep);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #08080d;
+        font-size: .75rem;
+        transition: transform .2s;
+    }
+
+    .avatar-ring:hover .avatar-edit-badge {
+        transform: scale(1.15);
+    }
+
+    .avatar-hint {
+        margin-top: 10px;
+        font-size: .72rem;
+        color: var(--text-muted);
+        letter-spacing: .06em;
+        text-transform: uppercase;
+    }
+
+    /* ── Section divider ── */
+    .ep-section {
+        font-size: .65rem;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        color: var(--gold);
+        font-weight: 600;
+        margin-bottom: 12px;
+        margin-top: 24px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .ep-section::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--gold-border);
+        }
+
+    /* ── Card ── */
+    .ep-card {
+        background: var(--bg-card);
+        border: 1px solid var(--gold-border);
+        border-radius: var(--radius-lg);
+        padding: 22px 20px;
+        margin-bottom: 16px;
+        transition: border-color .3s;
+        animation: fadeUp .4s ease both;
+    }
+
+        .ep-card:nth-child(2) {
+            animation-delay: .07s;
+        }
+
+        .ep-card:nth-child(3) {
+            animation-delay: .14s;
+        }
+
+        .ep-card:focus-within {
+            border-color: var(--gold-hover);
+        }
+
+    /* ── Field ── */
+    .ep-field {
+        margin-bottom: 18px;
+    }
+
+        .ep-field:last-child {
+            margin-bottom: 0;
+        }
+
+    .ep-label {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: .7rem;
+        font-weight: 600;
+        letter-spacing: .09em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        margin-bottom: 7px;
+    }
+
+        .ep-label i {
+            color: var(--gold);
+            font-size: .75rem;
+        }
+
+    .ep-input,
+    .ep-select,
+    .ep-textarea {
+        width: 100%;
+        background: var(--bg-input);
+        border: 1.5px solid rgba(200,168,75,.14);
+        border-radius: var(--radius-md);
+        color: var(--text-primary);
+        font-family: 'Outfit', sans-serif;
+        font-size: .9rem;
+        padding: 12px 15px;
+        outline: none;
+        transition: all .22s ease;
+        -webkit-appearance: none;
+    }
+
+        .ep-input:focus,
+        .ep-select:focus,
+        .ep-textarea:focus {
+            border-color: var(--gold);
+            background: rgba(200,168,75,.04);
+            box-shadow: 0 0 0 3px rgba(200,168,75,.1);
+        }
+
+        .ep-input::placeholder,
+        .ep-textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+    .ep-textarea {
+        resize: none;
+        line-height: 1.65;
+        min-height: 100px;
+    }
+
+    .ep-select {
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237e7c8a' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        padding-right: 38px;
+    }
+
+        .ep-select option {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+    .ep-input-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+    /* char counter */
+    .ep-meta {
+        font-size: .68rem;
+        color: var(--text-muted);
+        text-align: right;
+        margin-top: 5px;
+    }
+
+    /* ── Validation ── */
+    .text-danger {
+        color: var(--danger) !important;
+        font-size: .72rem;
+        margin-top: 4px;
+        display: block;
+    }
+
+    .alert-errors {
+        background: rgba(217,85,85,.08);
+        border: 1px solid rgba(217,85,85,.25);
+        border-radius: var(--radius-md);
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        font-size: .82rem;
+        color: var(--danger);
+    }
+
+    .alert-success {
+        background: rgba(74,171,122,.08);
+        border: 1px solid rgba(74,171,122,.25);
+        border-radius: var(--radius-md);
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        font-size: .82rem;
+        color: var(--success);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* ── Action bar ── */
+    .ep-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 28px;
+        animation: fadeUp .4s .28s ease both;
+    }
+
+    .btn-save-profile {
+        flex: 1;
+        padding: 14px 20px;
+        background: linear-gradient(135deg, var(--gold) 0%, #a8852a 100%);
+        border: none;
+        border-radius: var(--radius-md);
+        color: #08080d;
+        font-family: 'Outfit', sans-serif;
+        font-size: .88rem;
+        font-weight: 700;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all .25s;
+    }
+
+        .btn-save-profile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(200,168,75,.32);
+        }
+
+        .btn-save-profile:active {
+            transform: translateY(0);
+        }
+
+    .btn-discard {
+        padding: 14px 18px;
+        background: var(--bg-surface);
+        border: 1.5px solid var(--gold-border);
+        border-radius: var(--radius-md);
+        color: var(--text-secondary);
+        font-family: 'Outfit', sans-serif;
+        font-size: .88rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all .22s;
+        white-space: nowrap;
+    }
+
+        .btn-discard:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+            background: rgba(217,85,85,.06);
+        }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(14px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<!-- Top bar -->
+<div class="ep-topbar">
+    <a asp-page="/Profiles/Users" class="ep-back">
+        <i class="fa-solid fa-arrow-left" style="font-size:.8rem;"></i>
+    </a>
+    <div class="ep-topbar-text">
+        <div class="ep-topbar-title">Edit Profile</div>
+        <div class="ep-topbar-sub">ChathamHouse</div>
+    </div>
+</div>
+
+<div class="ep-wrap">
+
+    @* Success message *@
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-success">
+            <i class="fa-solid fa-circle-check"></i>
+            @TempData["Success"]
+        </div>
+    }
+
+    @* Error summary *@
+    <div asp-validation-summary="ModelOnly" class="alert-errors"></div>
+
+    <form method="post" enctype="multipart/form-data" asp-page-handler="EditProfile" id="profileForm">
+        @Html.AntiForgeryToken()
+
+        <!-- Avatar upload -->
+        <div class="avatar-block">
+            <div class="avatar-ring" id="avatarZone">
+                <input type="file" id="ImageFile" asp-for="ImageFile"
+                       accept="image/*" hidden />
+
+                <img id="avatarPreview"
+                     src="@(string.IsNullOrEmpty(Model.ProfileUser?.Image)
+                                                   ? "/images/default.png"
+                                                   : Model.ProfileUser.Image + "?v=" + Guid.NewGuid())"
+                     alt="Profile picture" />
+
+                <div class="avatar-edit-badge">
+                    <i class="fa-solid fa-camera"></i>
+                </div>
+            </div>
+            <span class="avatar-hint">Tap to change photo</span>
+            <span asp-validation-for="ImageFile" class="text-danger"></span>
+        </div>
+
+        <!-- Identity section -->
+        <div class="ep-section">Identity</div>
+
+        <div class="ep-card">
+            <div class="ep-input-row">
+                <div class="ep-field">
+                    <label class="ep-label" asp-for="Input.ClubName">
+                        <i class="fa-solid fa-star"></i> Club Name
+                    </label>
+                    <input class="ep-input" asp-for="Input.ClubName"
+                           placeholder="Your club or org" />
+                    <span asp-validation-for="Input.ClubName" class="text-danger"></span>
+                </div>
+
+                <div class="ep-field">
+                    <label class="ep-label" asp-for="Input.UserName">
+                        <i class="fa-solid fa-at"></i> Username
+                    </label>
+                    <input class="ep-input" asp-for="Input.UserName"
+                           placeholder="Input.UserName" />
+                    <span asp-validation-for="Input.UserName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="ep-field">
+                <label class="ep-label" asp-for="Input.Email">
+                    <i class="fa-solid fa-envelope"></i> Email
+                </label>
+                <input class="ep-input" asp-for="Input.Email"
+                       type="email" placeholder="you@email.com" />
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- About section -->
+        <div class="ep-section">About</div>
+
+        <div class="ep-card">
+            <div class="ep-field">
+                <label class="ep-label" asp-for="Input.Bio">
+                    <i class="fa-solid fa-pen-nib"></i> Bio
+                </label>
+                <textarea class="ep-textarea" asp-for="Input.Bio"
+                          id="bioTextarea"
+                          placeholder="Tell people what your club is about..."></textarea>
+                <div class="ep-meta"><span id="bioCount">0</span> / 200</div>
+                <span asp-validation-for="Input.Bio" class="text-danger"></span>
+            </div>
+
+            <div class="ep-field">
+                <label class="ep-label" asp-for="Input.ContactAddress">
+                    <i class="fa-solid fa-location-dot"></i> Contact Address
+                </label>
+                <input class="ep-input" asp-for="Input.ContactAddress"
+                       placeholder="Your address" />
+                <span asp-validation-for="Input.ContactAddress" class="text-danger"></span>
+            </div>
+
+            <div class="ep-field">
+                <label class="ep-label" asp-for="Input.PhoneNumber">
+                    <i class="fa-solid fa-phone"></i> Phone Number
+                </label>
+                <input class="ep-input" asp-for="Input.PhoneNumber"
+                       type="tel" placeholder="+234 000 0000" />
+                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+            </div>
+
+        <!-- Action buttons -->
+        <div class="ep-actions">
+            <button type="submit" class="btn-save-profile" id="saveBtn">
+                <i class="fa-solid fa-check"></i>
+                Save Profile
+            </button>
+            <a asp-page="/Profiles/Users" class="btn-discard">
+                <i class="fa-solid fa-xmark"></i>
+                Discard
+            </a>
+
+                <a asp-page="/Setting/Edit" class="btn-discard">
+                    <i class="fa-solid fa-arrow-circle-left"></i>
+                    Back
+                </a>
+        </div>
+
+    </form>
+</div>
+ss
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // ── Avatar click to upload ──
+        document.getElementById('avatarZone').addEventListener('click', () => {
+            document.getElementById('ImageFile').click();
+        });
+
+        document.getElementById('ImageFile').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowed.includes(file.type)) {
+                alert('Please upload a JPG, PNG, GIF, or WEBP image.');
+                this.value = '';
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size must be less than 5MB.');
+                this.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('avatarPreview').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // ── Bio character counter ──
+        const bioTextarea = document.getElementById('bioTextarea');
+        const bioCount    = document.getElementById('bioCount');
+
+        function updateBioCount() {
+            const len = (bioTextarea.value || '').length;
+            bioCount.textContent = len;
+            bioCount.style.color = len > 180
+                ? '#d95555'
+                : len > 150
+                    ? '#c8a84b'
+                    : '#42404f';
+        }
+
+        bioTextarea.addEventListener('input', updateBioCount);
+        updateBioCount();
+
+        // ── Save loading state ──
+        document.getElementById('profileForm').addEventListener('submit', () => {
+            const btn = document.getElementById('saveBtn');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+            btn.style.opacity = '0.75';
+            btn.style.pointerEvents = 'none';
+        });
+    </script>
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">

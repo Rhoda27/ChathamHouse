@@ -1,0 +1,676 @@
+﻿@page
+@model ChathamHouse.Pages.Setting.EditModel
+@{
+    ViewData["Title"] = "Edit Post";
+}
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root {
+        --bg-deep: #0a0a0f;
+        --bg-card: #111118;
+        --bg-surface: #1a1a24;
+        --bg-input: #16161f;
+        --accent-gold: #c9a84c;
+        --accent-gold-light: #e8c97a;
+        --accent-glow: rgba(201, 168, 76, 0.15);
+        --text-primary: #f0ede8;
+        --text-secondary: #8a8799;
+        --text-muted: #4a4858;
+        --border-subtle: rgba(201, 168, 76, 0.12);
+        --border-hover: rgba(201, 168, 76, 0.35);
+        --danger: #e05555;
+        --success: #4caf82;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        background: var(--bg-deep);
+        color: var(--text-primary);
+        font-family: 'DM Sans', sans-serif;
+        min-height: 100vh;
+        padding-bottom: 80px;
+    }
+
+    /* ── Top bar ── */
+    .edit-topbar {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(10, 10, 15, 0.92);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--border-subtle);
+        padding: 14px 24px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .back-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+
+        .back-btn:hover {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+    .topbar-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: 0.01em;
+    }
+
+    .topbar-sub {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-left: auto;
+    }
+
+    /* ── Page layout ── */
+    .edit-wrapper {
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 32px 20px;
+    }
+
+    /* ── Section label ── */
+    .section-label {
+        font-size: 0.68rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent-gold);
+        font-weight: 600;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-subtle);
+        }
+
+    /* ── Image upload ── */
+    .image-upload-zone {
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1.5px dashed var(--border-subtle);
+        background: var(--bg-input);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        margin-bottom: 28px;
+        aspect-ratio: 16/9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .image-upload-zone:hover,
+        .image-upload-zone.drag-over {
+            border-color: var(--accent-gold);
+            background: rgba(201, 168, 76, 0.04);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+
+    .image-preview-fill {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+    }
+
+        .image-preview-fill.visible {
+            opacity: 1;
+        }
+
+    .image-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(10,10,15,0.85) 0%, transparent 50%);
+        opacity: 0;
+        transition: opacity 0.3s;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-bottom: 20px;
+    }
+
+    .image-upload-zone:hover .image-overlay {
+        opacity: 1;
+    }
+
+    .upload-placeholder {
+        text-align: center;
+        padding: 24px;
+        transition: opacity 0.3s;
+    }
+
+    .upload-icon-wrap {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: var(--bg-surface);
+        border: 1.5px solid var(--border-subtle);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        transition: all 0.3s;
+    }
+
+    .image-upload-zone:hover .upload-icon-wrap {
+        border-color: var(--accent-gold);
+        background: var(--accent-glow);
+    }
+
+    .upload-icon-wrap i {
+        font-size: 1.5rem;
+        color: var(--text-muted);
+        transition: color 0.3s;
+    }
+
+    .image-upload-zone:hover .upload-icon-wrap i {
+        color: var(--accent-gold);
+    }
+
+    .upload-hint {
+        font-size: 0.82rem;
+        color: var(--text-secondary);
+        line-height: 1.5;
+    }
+
+        .upload-hint strong {
+            color: var(--text-primary);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+    .change-image-badge {
+        background: var(--accent-gold);
+        color: #0a0a0f;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 6px 16px;
+        border-radius: 20px;
+    }
+
+    /* ── Form card ── */
+    .form-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: 20px;
+        padding: 28px;
+        margin-bottom: 20px;
+        transition: border-color 0.3s;
+    }
+
+        .form-card:focus-within {
+            border-color: var(--border-hover);
+        }
+
+    /* ── Input styles ── */
+    .field-group {
+        margin-bottom: 22px;
+    }
+
+        .field-group:last-child {
+            margin-bottom: 0;
+        }
+
+    .field-label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+    }
+
+    .field-input,
+    .field-select,
+    .field-textarea {
+        width: 100%;
+        background: var(--bg-input);
+        border: 1.5px solid var(--border-subtle);
+        border-radius: 12px;
+        color: var(--text-primary);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.92rem;
+        padding: 13px 16px;
+        transition: all 0.25s ease;
+        outline: none;
+        -webkit-appearance: none;
+    }
+
+        .field-input:focus,
+        .field-select:focus,
+        .field-textarea:focus {
+            border-color: var(--accent-gold);
+            background: rgba(201, 168, 76, 0.04);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .field-input::placeholder,
+        .field-textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+    .field-textarea {
+        resize: none;
+        line-height: 1.65;
+        min-height: 130px;
+    }
+
+    .field-select {
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8799' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        padding-right: 40px;
+    }
+
+        .field-select option {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+    .char-count {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        text-align: right;
+        margin-top: 6px;
+    }
+
+    /* ── Hidden fields indicator ── */
+    .hidden-fields-note {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        padding: 10px 14px;
+        background: var(--bg-surface);
+        border-radius: 10px;
+        margin-bottom: 24px;
+        border: 1px solid var(--border-subtle);
+    }
+
+        .hidden-fields-note i {
+            color: var(--success);
+            font-size: 0.8rem;
+        }
+
+    /* ── Action buttons ── */
+    .action-bar {
+        display: flex;
+        gap: 12px;
+        margin-top: 28px;
+    }
+
+    .btn-save {
+        flex: 1;
+        padding: 15px 24px;
+        background: linear-gradient(135deg, var(--accent-gold) 0%, #b8922e 100%);
+        border: none;
+        border-radius: 14px;
+        color: #0a0a0f;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-transform: uppercase;
+    }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(201, 168, 76, 0.35);
+        }
+
+        .btn-save:active {
+            transform: translateY(0);
+        }
+
+    .btn-cancel {
+        padding: 15px 20px;
+        background: var(--bg-surface);
+        border: 1.5px solid var(--border-subtle);
+        border-radius: 14px;
+        color: var(--text-secondary);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.25s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        white-space: nowrap;
+    }
+
+        .btn-cancel:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+            background: rgba(224, 85, 85, 0.06);
+        }
+
+    /* ── Validation ── */
+    .text-danger {
+        color: var(--danger) !important;
+        font-size: 0.75rem;
+        margin-top: 5px;
+        display: block;
+    }
+
+    /* ── Loading state ── */
+    .btn-save.loading {
+        opacity: 0.7;
+        pointer-events: none;
+    }
+
+        .btn-save.loading::after {
+            content: '';
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(10,10,15,0.3);
+            border-top-color: #0a0a0f;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-left: 8px;
+        }
+
+    @@keyframes spin {
+        to
+
+    {
+        transform: rotate(360deg);
+    }
+
+    }
+
+    /* ── Entry animation ── */
+    .fade-up {
+        opacity: 0;
+        transform: translateY(16px);
+        animation: fadeUp 0.45s ease forwards;
+    }
+
+        .fade-up:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+
+        .fade-up:nth-child(2) {
+            animation-delay: 0.12s;
+        }
+
+        .fade-up:nth-child(3) {
+            animation-delay: 0.19s;
+        }
+
+        .fade-up:nth-child(4) {
+            animation-delay: 0.26s;
+        }
+
+    @@keyframes fadeUp {
+        to
+
+    {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+</style>
+
+<!-- Top bar -->
+<div class="edit-topbar">
+    <a asp-page="/Land/Index" class="back-btn">
+        <i class="fa-solid fa-arrow-left" style="font-size: 0.85rem;"></i>
+    </a>
+    <div>
+        <div class="topbar-title">Edit Post</div>
+    </div>
+    <span class="topbar-sub">ChathamHouse</span>
+</div>
+
+<div class="edit-wrapper">
+    <form method="post" enctype="multipart/form-data" id="editForm">
+
+        <div asp-validation-summary="ModelOnly" class="text-danger"
+             style="background: rgba(224,85,85,0.08); border: 1px solid rgba(224,85,85,0.25);
+                    border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; font-size: 0.82rem;">
+        </div>
+
+        <!-- Hidden fields -->
+        
+        <input type="hidden" asp-for="posts.Id" />
+        <input type="hidden" asp-for="posts.UserId" />
+        <input type="hidden" asp-for="posts.PaymentReference" />
+
+        <!-- Payment reference notice -->
+        <div class="hidden-fields-note fade-up">
+            <i class="fa-solid fa-shield-halved"></i>
+            Payment verified — your post is published and editable
+        </div>
+
+        <!-- Image section -->
+        <div class="fade-up">
+            <div class="section-label">Post Image</div>
+
+            <div class="image-upload-zone" id="drop-area">
+                <input id="Imagefile" asp-for="Imagefile" type="file" accept="image/*" hidden />
+
+                @if (!string.IsNullOrEmpty(Model.posts?.ImageUrl))
+                {
+                    <img id="previewImage" src="@Model.posts.ImageUrl"
+                         class="image-preview-fill visible" alt="Post image" />
+                }
+                else
+                {
+                    <img id="previewImage" src="" class="image-preview-fill" alt="Post image" />
+                }
+
+                <div class="image-overlay">
+                    <span class="change-image-badge">
+                        <i class="fa-solid fa-camera" style="margin-right: 6px;"></i>Change Photo
+                    </span>
+                </div>
+
+                <div class="upload-placeholder" id="uploadPlaceholder"
+                     style="@(!string.IsNullOrEmpty(Model.posts?.ImageUrl) ? "display:none;" : "")">
+                    <div class="upload-icon-wrap">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <div class="upload-hint">
+                        <strong>Click or drag to upload</strong>
+                        JPG, PNG, WEBP · Max 10MB
+                    </div>
+                </div>
+            </div>
+            <span asp-validation-for="Imagefile" class="text-danger"></span>
+        </div>
+
+        <!-- Content fields -->
+        <div class="fade-up">
+            <div class="section-label">Post Details</div>
+
+            <div class="form-card">
+                <!-- Club name -->
+                <div class="field-group">
+                    <label class="field-label" asp-for="posts.Name">Club / Organization Name</label>
+                    <input class="field-input" asp-for="posts.Name"
+                           placeholder="e.g. The Night Owls Club" id="nameInput" />
+                    <span asp-validation-for="posts.Name" class="text-danger"></span>
+                </div>
+
+                <!-- Location -->
+                <div class="field-group">
+                    <label class="field-label" asp-for="posts.Location">Location</label>
+                    <select class="field-select" asp-for="posts.Location">
+                        <option value="">Select a country</option>
+                        <option value="Nigeria">🇳🇬 Nigeria (Africa)</option>
+                        <option value="Ghana">🇬🇭 Ghana (Africa)</option>
+                        <option value="South Africa">🇿🇦 South Africa (Africa)</option>
+                        <option value="Kenya">🇰🇪 Kenya (Africa)</option>
+                        <option value="USA">🇺🇸 United States (North America)</option>
+                        <option value="UK">🇬🇧 United Kingdom (Europe)</option>
+                        <option value="Canada">🇨🇦 Canada (North America)</option>
+                        <option value="Australia">🇦🇺 Australia (Oceania)</option>
+                        <option value="Germany">🇩🇪 Germany (Europe)</option>
+                        <option value="France">🇫🇷 France (Europe)</option>
+                        <option value="UAE">🇦🇪 UAE (Middle East)</option>
+                        <option value="Afghanistan">🇦🇫 Afghanistan (Asia)</option>
+                    </select>
+                    <span asp-validation-for="posts.Location" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="fade-up">
+            <div class="section-label">Description</div>
+
+            <div class="form-card">
+                <div class="field-group">
+                    <label class="field-label" asp-for="posts.Content">What's happening</label>
+                    <textarea class="field-textarea" asp-for="posts.Content"
+                              id="contentTextarea"
+                              placeholder="Tell people what makes this night special..."></textarea>
+                    <div class="char-count"><span id="charCount">0</span> characters</div>
+                    <span asp-validation-for="posts.Content" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="action-bar fade-up">
+            <button type="submit" class="btn-save" id="saveBtn">
+                <i class="fa-solid fa-floppy-disk"></i>
+                Save Changes
+            </button>
+            <a asp-page="/Profiles/Edit" class="btn-cancel">
+               Next
+            </a>
+        </div>
+
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // ── Image preview ──
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('Imagefile');
+        const previewImg = document.getElementById('previewImage');
+        const placeholder = document.getElementById('uploadPlaceholder');
+
+        dropArea.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Validate type
+            const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+            if (!allowed.includes(file.type)) {
+                alert('Please upload a JPG, PNG, or WEBP image.');
+                this.value = '';
+                return;
+            }
+
+            // Validate size (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('File size must be less than 10MB.');
+                this.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                previewImg.classList.add('visible');
+                if (placeholder) placeholder.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // ── Drag and drop ──
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
+            dropArea.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
+        });
+
+        dropArea.addEventListener('dragenter', () => dropArea.classList.add('drag-over'));
+        dropArea.addEventListener('dragover',  () => dropArea.classList.add('drag-over'));
+        dropArea.addEventListener('dragleave', () => dropArea.classList.remove('drag-over'));
+        dropArea.addEventListener('drop', (e) => {
+            dropArea.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                fileInput.files = files;
+                fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+
+        // ── Character counter ──
+        const textarea = document.getElementById('contentTextarea');
+        const charCount = document.getElementById('charCount');
+
+        function updateCount() {
+            charCount.textContent = textarea.value.length;
+        }
+
+        textarea.addEventListener('input', updateCount);
+        updateCount();
+
+        // ── Save button loading state ──
+        document.getElementById('editForm').addEventListener('submit', function () {
+            const btn = document.getElementById('saveBtn');
+            btn.classList.add('loading');
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Saving...';
+        });
+    </script>
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">

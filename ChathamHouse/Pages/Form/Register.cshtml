@@ -1,0 +1,93 @@
+﻿@page
+@model ChathamHouse.Pages.Form.RegisterModel
+@{
+}
+
+
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-light border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand h6 text-light" asp-area="" asp-page="/Index">ChathamHouse</a>
+
+            </div>
+        </nav>
+    </header>
+
+    <div class="container  logs">
+        <div class="first-shape">
+            <div class="curved-shape"></div>
+            <div class="curved-shape2"></div>
+            <div class="form-box Login">
+                <div class="animation">
+                <form method="post" >
+                    
+                    <div asp-validation-summary="All" class="text-danger"></div>
+
+                        <div class="input-box mb-3">
+                            <h2>Login</h2>
+
+                        </div>
+
+                        <div class="input-box mb-3">
+                            <div class="input-group">
+                                <div class="input-group-text">
+                                    <i class="fa-solid fa-user"></i>
+                                </div>
+                                <input class="form-control" asp-for="Input.ClubName" placeholder="ClubName" />
+                                <span asp-validation-for="Input.ClubName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="input-box mb-3">
+                            <div class="input-group">
+                                <div class="input-group-text">
+                                    <i class="fa-solid fa-envelope"></i>
+                                </div>
+                                <input type="email" class="form-control" asp-for="Input.Email" placeholder="Email" />
+                                <span asp-validation-for="Input.Email" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="input-box mb-3">
+                            <div class="input-group">
+                                <div class="input-group-text">
+                                    <i class="fa-solid fa-lock"></i>
+                                </div>
+                                <input type="password" class="form-control" asp-for="Input.Password" placeholder="Password" />
+                                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                            </div>
+                        </div>
+
+
+                        <div class="input-box mb-3">
+                            <div class="input-group">
+                                <div class="input-group-text">
+                                    <i class="fa-solid fa-location"></i>
+                                </div>
+                                <input class="form-control" asp-for="Input.Location" placeholder="Location" />
+                                <span asp-validation-for="Input.Location" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="input-box">
+                            <button type="submit" class="btn">SignUp</button>
+                        </div>
+
+                        @* <div class="input-box">
+                            <p> or Register with social platforms</p>
+                            <i class="fa-google fa-brands fs-3"></i>
+                            <i class="fa-facebook fa-brands fs-3"></i>
+                        </div> *@
+
+                    </form>
+                </div>
+                <div class="info-context">
+                    <h1>Welcome Back</h1>
+                    <p>Already have an Account</p>
+                    <div class="signuplink">
+                        <a asp-page="Login" class=" btn"> Login</a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
